@@ -63,6 +63,9 @@ def test_run_judge_and_human_sheet_and_kappa(tmp_path):
     })
     assert run_judge(answers, questions, lambda c, q: 'Ngữ cảnh mẫu', lambda q: 'Điều 15: 200k', out, fake_judge) == 2
     assert run_judge(answers, questions, lambda c, q: 'Ngữ cảnh mẫu', lambda q: 'Điều 15: 200k', out, fake_judge) == 0
+    out_batch = tmp_path / 'judge_batch.jsonl'
+    assert run_judge(answers, questions, lambda c, q: 'Ngữ cảnh mẫu', lambda q: 'Điều 15: 200k',
+                     out_batch, fake_judge, workers=4) == 2
     rows = {(r['config'], r['qid']): r for r in read_rows(out)}
     assert rows[('C3-E3-R0', 'q1')]['h_gold'] == 0 and rows[('C3-E3-R0', 'q1')]['wrong_article'] is False
     assert rows[('closed_book', 'q1')]['h_gold'] == 1 and rows[('closed_book', 'q1')]['wrong_article'] is True

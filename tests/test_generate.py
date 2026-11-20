@@ -41,6 +41,10 @@ def test_run_generate_and_summarize(tmp_path):
     s = summarize_generation(rows, config='C3-E3-R0')
     assert s['correct_refusal'] == 1.0 and s['fabrication'] == 0.0 and s['false_refusal'] == 0.0
     assert s['em'] == 1.0 and s['f1'] == 1.0 and s['contains_gold'] == 1.0
+    out_batch = tmp_path / 'answers_batch.jsonl'
+    assert run_generate('C3-E3-R0', questions, lambda q: ['Đoạn 1'], out_batch, gen_fn,
+                        tok=fake_tok, limit=10, workers=4) == 2
+    assert len(read_rows(out_batch)) == 2
 
 
 def test_select_questions_stratified_50():

@@ -7,6 +7,7 @@ Chạy từ thư mục gốc của kho mã:
         --retrieval <retrieval.jsonl> --method dense[c3] --model Qwen/Qwen3-8B
 """
 import argparse
+from concurrent.futures import ThreadPoolExecutor
 import json
 import re
 import time
@@ -169,43 +170,57 @@ def select_questions(questions, limit=None):
     return list(questions[:limit])
 
 
-def run_generate(config, questions, contexts_of, out_path, generate_fn, tok=None, limit=CTX_LIMIT, model_name=''):
+def run_generate(config, questions, contexts_of, out_path, generate_fn, tok=None, limit=CTX_LIMIT,
+                 model_name='', workers=1):
     """Chạy sinh câu trả lời cho danh sách `questions`, ghi từng dòng ngay vào `out_path` và bỏ qua cặp đã có.
 
     `contexts_of(q)` có thể trả về `None` (closed-book), `[text, ...]`, hoặc `([cid, ...], [text, ...])`.
+    Khi `workers > 1` (ví dụ gọi `llama-server` có continuous batching), gửi song song `workers` yêu cầu.
     """
     done = {(r['config'], r['qid']) for r in read_rows(out_path)}
+    pending = [q for q in questions if (config, q['qid']) not in done]
+    if not pending:
+        return 0
+
+    def _one(q):
+        qid = q['qid']
+        ctx = contexts_of(q)
+        if isinstance(ctx, tuple):
+            cids, passages = ctx
+        else:
+            cids, passages = [], ctx
+        prompt, n_trunc = build_prompt(q['question'], passages, tok=tok, limit=limit)
+        t0 = time.perf_counter()
+        answer = clean_generation(generate_fn(prompt))
+        seconds = time.perf_counter() - t0
+        refused = is_refusal(answer)
+        answers = q.get('answers') or []
+        scores = em_f1(answer, answers) if answers else {'em': None, 'f1': None}
+        return {
+            'config': config, 'model': model_name, 'qid': qid, 'answerable': q['answerable'],
+            'answer': answer, 'refused': refused,
+            'contains_gold': contains_gold_answer(answer, answers),
+            **scores,
+            'context_ids': cids,
+            'n_passages': 0 if passages is None else len(passages),
+            'truncated_passages': n_trunc,
+            'seconds': round(seconds, 3),
+        }
+
     written = 0
     with open_append(out_path) as f:
-        for q in questions:
-            qid = q['qid']
-            if (config, qid) in done:
-                continue
-            ctx = contexts_of(q)
-            if isinstance(ctx, tuple):
-                cids, passages = ctx
-            else:
-                cids, passages = [], ctx
-            prompt, n_trunc = build_prompt(q['question'], passages, tok=tok, limit=limit)
-            t0 = time.perf_counter()
-            answer = clean_generation(generate_fn(prompt))
-            seconds = time.perf_counter() - t0
-            refused = is_refusal(answer)
-            answers = q.get('answers') or []
-            scores = em_f1(answer, answers) if answers else {'em': None, 'f1': None}
-            row = {
-                'config': config, 'model': model_name, 'qid': qid, 'answerable': q['answerable'],
-                'answer': answer, 'refused': refused,
-                'contains_gold': contains_gold_answer(answer, answers),
-                **scores,
-                'context_ids': cids,
-                'n_passages': 0 if passages is None else len(passages),
-                'truncated_passages': n_trunc,
-                'seconds': round(seconds, 3),
-            }
-            f.write(json.dumps(row, ensure_ascii=False) + '\n')
-            f.flush()
-            written += 1
+        if workers and workers > 1:
+            with ThreadPoolExecutor(max_workers=workers) as ex:
+                for row in ex.map(_one, pending):
+                    f.write(json.dumps(row, ensure_ascii=False) + '\n')
+                    f.flush()
+                    written += 1
+        else:
+            for q in pending:
+                row = _one(q)
+                f.write(json.dumps(row, ensure_ascii=False) + '\n')
+                f.flush()
+                written += 1
     return written
 
 
@@ -242,8 +257,10 @@ def main(argv=None):
     parser.add_argument('--config', required=True, help='closed_book, oracle, hoặc nhãn cấu hình như C3-E3-R0')
     parser.add_argument('--retrieval', help='file retrieval_*.jsonl (bắt buộc khi config khác closed_book/oracle)')
     parser.add_argument('--method', help='nhãn phương pháp trong file retrieval (ví dụ dense[c3], hybrid[c3][word])')
-    parser.add_argument('--model', default='Qwen/Qwen3-8B')
+    parser.add_argument('--model', default='Qwen/Qwen3.5-9B')
     parser.add_argument('--llama-url', help='URL gốc của llama-server (mặc định dùng Transformers)')
+    parser.add_argument('--workers', type=int, default=0,
+                        help='số luồng gửi batch song song tới llama-server (0 = tự chọn 8 khi có --llama-url)')
     parser.add_argument('--ref-tokenizer', default=DEFAULT_MODEL)
     parser.add_argument('--limit', type=int, help='chỉ chạy trên N câu đầu (ví dụ 50 câu dev ở Ngày 8–9)')
     parser.add_argument('--top-n', type=int, default=TOP_N)
@@ -285,8 +302,9 @@ def main(argv=None):
     else:
         ref_tok, gen_fn = None, (lambda p: '')
 
+    workers = args.workers or (8 if args.llama_url else 1)
     written = run_generate(args.config, questions, contexts_of, args.out_path, gen_fn,
-                           tok=ref_tok, limit=tok_limit, model_name=args.model)
+                           tok=ref_tok, limit=tok_limit, model_name=args.model, workers=workers)
     summary = summarize_generation(read_rows(args.out_path), config=args.config)
     print(f'Ghi thêm {written} câu trả lời ({args.config}, model={args.model}) vào {args.out_path}')
     print(json.dumps(summary, ensure_ascii=False, indent=2))

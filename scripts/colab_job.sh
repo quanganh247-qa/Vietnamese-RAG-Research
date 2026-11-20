@@ -31,6 +31,10 @@ if ! command -v nvcc >/dev/null; then
   exit 1
 fi
 uv sync --locked --python 3.12 --no-dev --extra rag
+if [[ ! -d data/processed && -n "${RAGVI_DRIVE_URL:-}" ]]; then
+  uv run --no-sync python -m pip install -q gdown
+  uv run --no-sync gdown --no-cookies --timeout 60 --retries 2 --continue -O data "$RAGVI_DRIVE_URL"
+fi
 
 py=(uv run --no-sync python -m)
 corpus=data/eval/viquad/corpus.jsonl
@@ -74,9 +78,10 @@ cp "$retrieval/retrieval_viquad_dev_pilot.jsonl" "$out/retrieval.jsonl"
 fi
 
 llama_ref=3837bf0bc02ea5d08f8ee3585fc8c7784a81bce8  # b12248
-model_repo=Qwen/Qwen2.5-7B-Instruct-GGUF
-model_revision=bb5d59e06d9551d752d08b292a50eb208b07ab1f
+model_repo=unsloth/Qwen3.5-9B-GGUF
+model_revision=1daf391c47cef14242f238b819fbe6fd500d624b
 model_alias="$model_repo:Q4_K_M"
+model_gguf=/content/models/Qwen3.5-9B-Q4_K_M.gguf
 git init -q /content/llama.cpp
 git -C /content/llama.cpp fetch -q --depth 1 https://github.com/ggml-org/llama.cpp.git "$llama_ref"
 git -C /content/llama.cpp checkout -q --detach FETCH_HEAD
@@ -85,17 +90,16 @@ cmake -S /content/llama.cpp -B /content/llama.cpp/build -DCMAKE_BUILD_TYPE=Relea
 cmake --build /content/llama.cpp/build --target llama-server --parallel 2
 
 mkdir -p /content/models
-for part in 00001 00002; do
-  file="qwen2.5-7b-instruct-q4_k_m-$part-of-00002.gguf"
-  curl -fL --retry 3 -o "/content/models/$file" "https://huggingface.co/$model_repo/resolve/$model_revision/$file"
-done
-printf 'llama.cpp=%s\nmodel=%s\nrevision=%s\n' "$llama_ref" "$model_alias" "$model_revision" > "$out/model.txt"
+curl -fL --retry 3 -o "$model_gguf" "https://huggingface.co/$model_repo/resolve/$model_revision/${model_gguf##*/}"
+printf 'llama.cpp=%s\nmodel=%s\nrevision=%s\njudge=%s\njudge_revision=%s\n' \
+  "$llama_ref" "$model_alias" "$model_revision" "$model_alias" "$model_revision" > "$out/model.txt"
 base=http://127.0.0.1:8080
 start_server() {
-  local alias=$1 gguf=$2 ctx=$3 log=$4
-  shift 4
+  local alias=$1 gguf=$2 ctx=$3 slots=$4 log=$5
+  shift 5
   /content/llama.cpp/build/bin/llama-server --host 127.0.0.1 --port 8080 --device CUDA0 --n-gpu-layers 99 \
-    --ctx-size "$ctx" --parallel 1 --alias "$alias" --model "$gguf" "$@" > "$log" 2>&1 &
+    --ctx-size "$ctx" --parallel "$slots" --cont-batching --batch-size 2048 --ubatch-size 512 \
+    --alias "$alias" --model "$gguf" "$@" > "$log" 2>&1 &
   server=$!
   trap 'kill "$server" 2>/dev/null || true' EXIT
   local i
@@ -108,10 +112,14 @@ start_server() {
   return 1
 }
 
-ctx=8192
-if [[ $mode == benchmark ]]; then ctx=32768; fi
-start_server "$model_alias" /content/models/qwen2.5-7b-instruct-q4_k_m-00001-of-00002.gguf "$ctx" "$out/llama-server.log"
-model=(--llama-url "$base" --model "$model_alias")
+vram_mib=$(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits | head -n1 | tr -d ' ')
+slots=4
+if [[ "${vram_mib:-0}" -ge 20000 ]]; then slots=8; fi
+ctx=$((4096 * slots))
+if [[ $mode == benchmark && "${vram_mib:-0}" -ge 20000 ]]; then ctx=$((8192 * slots)); fi
+start_server "$model_alias" "$model_gguf" "$ctx" "$slots" "$out/llama-server.log" \
+  --jinja --chat-template-kwargs '{"enable_thinking":false}'
+model=(--llama-url "$base" --model "$model_alias" --workers "$slots")
 run=("${py[@]}" ragvi.generate)
 if [[ $mode == rag ]]; then
   "${run[@]}" "$out/questions.jsonl" "$corpus" "$out/answers.jsonl" --config closed_book "${model[@]}"
@@ -129,7 +137,7 @@ for dataset in viquad zalo; do
     tag=${dataset}_$split
     qs=data/eval/$dataset/$split.jsonl
     answers=$out/answers_$tag.jsonl
-    echo "=== Sinh câu trả lời $tag ==="
+    echo "=== Sinh câu trả lời $tag (parallel slots=$slots) ==="
     "${run[@]}" "$qs" "$units" "$answers" --config closed_book "${model[@]}"
     "${run[@]}" "$out/${tag}_oracle.jsonl" "$units" "$answers" --config oracle "${model[@]}"
     "${run[@]}" "$qs" "$chunks" "$answers" --config C3-E3-R0 "${model[@]}" \
@@ -137,25 +145,15 @@ for dataset in viquad zalo; do
   done
 done
 
-kill "$server"
-wait "$server" || true
-trap - EXIT
-judge_repo=Qwen/Qwen3-8B-GGUF
-judge_revision=7c41481f57cb95916b40956ab2f0b139b296d974
-judge_alias="$judge_repo:Q4_K_M"
-judge_gguf=/content/models/Qwen3-8B-Q4_K_M.gguf
-curl -fL --retry 3 -o "$judge_gguf" "https://huggingface.co/$judge_repo/resolve/$judge_revision/${judge_gguf##*/}"
-printf 'judge=%s\njudge_revision=%s\n' "$judge_alias" "$judge_revision" >> "$out/model.txt"
-start_server "$judge_alias" "$judge_gguf" 8192 "$out/judge-server.log" --jinja --chat-template-kwargs '{"enable_thinking":false}'
 for dataset in viquad zalo; do
   units=$corpus
   chunks=$retrieval/chunks/viquad__c3.jsonl
   if [[ $dataset == zalo ]]; then units=data/processed/zalo_legal; chunks=$retrieval/chunks/zalo_legal__c3.jsonl; fi
   for split in dev test; do
     tag=${dataset}_$split
-    echo "=== Judge sơ bộ $tag (chưa hiệu chỉnh) ==="
+    echo "=== Judge sơ bộ $tag (chưa hiệu chỉnh, parallel slots=$slots) ==="
     "${py[@]}" ragvi.judge "$out/answers_$tag.jsonl" "data/eval/$dataset/$split.jsonl" "$units" "$out/judge_$tag.jsonl" \
-      --chunks "$chunks" --model "$judge_alias" --llama-url "$base"
+      --chunks "$chunks" "${model[@]}"
   done
 done
 "${py[@]}" ragvi.benchmark report data "$out"

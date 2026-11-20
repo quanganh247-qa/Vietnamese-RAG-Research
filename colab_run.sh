@@ -12,6 +12,8 @@ esac
 job_env=(--env "RAGVI_JOB_MODE=$mode")
 if [[ $mode == eda ]]; then
   : "${RAGVI_DRIVE_URL:?Đặt RAGVI_DRIVE_URL thành URL thư mục dữ liệu chia sẻ.}"
+fi
+if [[ -n "${RAGVI_DRIVE_URL:-}" ]]; then
   job_env+=(--env "RAGVI_DRIVE_URL=$RAGVI_DRIVE_URL")
 fi
 if ! command -v uvx >/dev/null; then
@@ -39,9 +41,19 @@ trap 'exit 143' TERM
 
 files=(pyproject.toml uv.lock src/ragvi scripts/colab_job.sh)
 case "$mode" in
-  rag) files+=(data/eval/viquad/{dev,corpus}.jsonl) ;;
-  benchmark) files+=(data/processed/{viquad,zalo_legal} data/eval/viquad/{dev,test,corpus}.jsonl
-    data/eval/zalo/{dev,test}.jsonl data/eval/{viquad,zalo}/manifest.json data/eval/zalo/removed_doc_ids.json) ;;
+  rag)
+    if [[ -f data/eval/viquad/dev.jsonl ]]; then
+      files+=(data/eval/viquad/{dev,corpus}.jsonl)
+    else
+      : "${RAGVI_DRIVE_URL:?Thư mục data/ cục bộ trống; hãy đặt RAGVI_DRIVE_URL thành URL thư mục dữ liệu Drive chia sẻ.}"
+    fi ;;
+  benchmark)
+    if [[ -d data/processed/viquad ]]; then
+      files+=(data/processed/{viquad,zalo_legal} data/eval/viquad/{dev,test,corpus}.jsonl
+        data/eval/zalo/{dev,test}.jsonl data/eval/{viquad,zalo}/manifest.json data/eval/zalo/removed_doc_ids.json)
+    else
+      : "${RAGVI_DRIVE_URL:?Thư mục data/ cục bộ trống; hãy đặt RAGVI_DRIVE_URL thành URL thư mục dữ liệu Drive chia sẻ.}"
+    fi ;;
   eda) files+=(notebooks/06_eda_du_lieu.ipynb) ;;
 esac
 # Chỉ tải lên đầu vào cần thiết; không gửi cả repo, cache hay thông tin đăng nhập.

@@ -55,8 +55,8 @@ add('[TÁI SỬ DỤNG] Đường dẫn và kiểm tra GPU',
     "GEN = O2 / 'generate'\n"
     "JUDGE = O2 / 'judge'\n"
     "SHEETS2 = O2 / 'review'\n"
-    "GEN_MODEL = 'Qwen/Qwen2.5-7B-Instruct'\n"
-    "JUDGE_MODEL = 'Qwen/Qwen3-8B'\n"
+    "GEN_MODEL = 'Qwen/Qwen3.5-9B'\n"
+    "JUDGE_MODEL = 'Qwen/Qwen3.5-9B'\n"
     "for d in (R, GEN, JUDGE, SHEETS2, Path('/content/src/ragvi')):\n"
     "    d.mkdir(parents=True, exist_ok=True)\n"
     "print(P, O, O2, EVAL, sep='\\n')")

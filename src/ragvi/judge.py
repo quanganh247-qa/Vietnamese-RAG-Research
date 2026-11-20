@@ -6,6 +6,7 @@ Chạy từ thư mục gốc của kho mã:
     PYTHONPATH=src python -m ragvi.judge --kappa <graded_sheet.md> <out_judge.jsonl>
 """
 import argparse
+from concurrent.futures import ThreadPoolExecutor
 import hashlib
 import json
 import random
@@ -126,44 +127,58 @@ def _clip(text, max_chars=JUDGE_MAX_CHARS):
     return text if len(text) <= max_chars else text[:max_chars].rstrip() + ' …'
 
 
-def run_judge(answer_rows, questions_by_qid, context_of, gold_of, out_path, judge_fn, model_name=''):
-    """Chấm điểm các câu trả lời của câu hỏi trả lời được (`answerable=True`), ghi nối tiếp vào `out_path`."""
+def run_judge(answer_rows, questions_by_qid, context_of, gold_of, out_path, judge_fn, model_name='', workers=1):
+    """Chấm điểm các câu trả lời của câu hỏi trả lời được (`answerable=True`), ghi nối tiếp vào `out_path`.
+
+    Khi `workers > 1` (ví dụ gọi `llama-server` có continuous batching), gửi song song `workers` yêu cầu.
+    """
     done = {(r['config'], r['qid']) for r in read_rows(out_path) if not r.get('error')}
+    pending = [row for row in answer_rows
+               if row.get('answerable', True) and (row['config'], row['qid']) not in done
+               and row['qid'] in questions_by_qid]
+    if not pending:
+        return 0
+
+    def _one(row):
+        config, qid = row['config'], row['qid']
+        q = questions_by_qid[qid]
+        refused = bool(row.get('refused') or is_refusal(row.get('answer', '')))
+        is_cb = config == 'closed_book'
+        cite = wrong_article_citation(row.get('answer', ''), q.get('gold_doc_ids')) if 'gold_doc_ids' in q else {}
+        if refused:
+            scores = derive_judge_metrics({'claims': [], 'correctness': 0}, True, is_closed_book=is_cb)
+            return {'config': config, 'qid': qid, 'judge_model': model_name, 'refused': True,
+                    'claims': [], **scores, **cite, 'error': None}
+        ctx_text = '(không cung cấp - closed-book)' if is_cb else _clip(context_of(config, qid))
+        prompt = PROMPT_JUDGE.format(
+            question=q['question'], context=ctx_text, gold=_clip(gold_of(q)), answer=row.get('answer', ''))
+        t0 = time.perf_counter()
+        raw = judge_fn(prompt)
+        elapsed = round(time.perf_counter() - t0, 3)
+        try:
+            parsed = parse_judge_json(raw)
+            scores = derive_judge_metrics(parsed, False, is_closed_book=is_cb)
+            return {'config': config, 'qid': qid, 'judge_model': model_name, 'refused': False,
+                    'claims': parsed['claims'], **scores, **cite, 'seconds': elapsed, 'error': None}
+        except (ValueError, json.JSONDecodeError) as e:
+            return {'config': config, 'qid': qid, 'judge_model': model_name, 'refused': False,
+                    'claims': None, 'correctness': None, 'h_gold': None, 'h_ctx': None, 'n_claims': None,
+                    **cite, 'seconds': elapsed, 'raw': raw, 'error': str(e)}
+
     written = 0
     with open_append(out_path) as f:
-        for row in answer_rows:
-            if not row.get('answerable', True):
-                continue
-            config, qid = row['config'], row['qid']
-            if (config, qid) in done or qid not in questions_by_qid:
-                continue
-            q = questions_by_qid[qid]
-            refused = bool(row.get('refused') or is_refusal(row.get('answer', '')))
-            is_cb = config == 'closed_book'
-            cite = wrong_article_citation(row.get('answer', ''), q.get('gold_doc_ids')) if 'gold_doc_ids' in q else {}
-            if refused:
-                scores = derive_judge_metrics({'claims': [], 'correctness': 0}, True, is_closed_book=is_cb)
-                out_row = {'config': config, 'qid': qid, 'judge_model': model_name, 'refused': True,
-                           'claims': [], **scores, **cite, 'error': None}
-            else:
-                ctx_text = '(không cung cấp - closed-book)' if is_cb else _clip(context_of(config, qid))
-                prompt = PROMPT_JUDGE.format(
-                    question=q['question'], context=ctx_text, gold=_clip(gold_of(q)), answer=row.get('answer', ''))
-                t0 = time.perf_counter()
-                raw = judge_fn(prompt)
-                elapsed = round(time.perf_counter() - t0, 3)
-                try:
-                    parsed = parse_judge_json(raw)
-                    scores = derive_judge_metrics(parsed, False, is_closed_book=is_cb)
-                    out_row = {'config': config, 'qid': qid, 'judge_model': model_name, 'refused': False,
-                               'claims': parsed['claims'], **scores, **cite, 'seconds': elapsed, 'error': None}
-                except (ValueError, json.JSONDecodeError) as e:
-                    out_row = {'config': config, 'qid': qid, 'judge_model': model_name, 'refused': False,
-                               'claims': None, 'correctness': None, 'h_gold': None, 'h_ctx': None, 'n_claims': None,
-                               **cite, 'seconds': elapsed, 'raw': raw, 'error': str(e)}
-            f.write(json.dumps(out_row, ensure_ascii=False) + '\n')
-            f.flush()
-            written += 1
+        if workers and workers > 1:
+            with ThreadPoolExecutor(max_workers=workers) as ex:
+                for out_row in ex.map(_one, pending):
+                    f.write(json.dumps(out_row, ensure_ascii=False) + '\n')
+                    f.flush()
+                    written += 1
+        else:
+            for row in pending:
+                out_row = _one(row)
+                f.write(json.dumps(out_row, ensure_ascii=False) + '\n')
+                f.flush()
+                written += 1
     return written
 
 
@@ -274,8 +289,10 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument('paths', nargs='*', help='<answers.jsonl> <questions.jsonl> <corpus> <out.jsonl/.md>')
     parser.add_argument('--chunks', help='file chunks/*.jsonl (ví dụ __c3.jsonl) để lấy văn bản các chunk ngữ cảnh')
-    parser.add_argument('--model', default='Qwen/Qwen2.5-7B-Instruct')
+    parser.add_argument('--model', default='Qwen/Qwen3.5-9B')
     parser.add_argument('--llama-url', help='URL llama-server dùng mô hình judge riêng')
+    parser.add_argument('--workers', type=int, default=0,
+                        help='số luồng gửi batch song song tới llama-server (0 = tự chọn 8 khi có --llama-url)')
     parser.add_argument('--limit', type=int, help='chỉ chấm N câu trả lời được đầu tiên (ví dụ 20 câu dev ở Ngày 11)')
     parser.add_argument('--human-sheet', action='store_true', help='xuất phiếu gán nhãn tay (Ngày 12)')
     parser.add_argument('--kappa', nargs=2, metavar=('PHIEU_DA_CHAM', 'JUDGE_JSONL'), help='tính κ (Ngày 13)')
@@ -329,7 +346,9 @@ def main(argv=None):
         judge_fn = load_llamacpp(args.llama_url, args.model, max_new_tokens=1024)
     else:
         judge_fn = load_generator(args.model) if need else (lambda p: '{}')
-    written = run_judge(answers, questions, context_of, gold_of, out_path, judge_fn, model_name=args.model)
+    workers = args.workers or (8 if args.llama_url else 1)
+    written = run_judge(answers, questions, context_of, gold_of, out_path, judge_fn,
+                        model_name=args.model, workers=workers)
     rows = [r for r in read_rows(out_path) if r.get('error') is None]
     errors = sum(r.get('error') is not None for r in read_rows(out_path))
     print(f'Đã chấm thêm {written} câu trả lời vào {out_path} (hợp lệ: {len(rows)}, lỗi JSON: {errors})')
