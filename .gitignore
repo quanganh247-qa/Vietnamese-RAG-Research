@@ -1,0 +1,12 @@
+.DS_Store
+__pycache__/
+.ipynb_checkpoints/
+
+# Dữ liệu nằm trên Google Drive, không đưa vào kho mã
+/data/
+
+# CV cá nhân, không thuộc đề tài
+/CV/
+
+.venv/
+.pytest_cache/
