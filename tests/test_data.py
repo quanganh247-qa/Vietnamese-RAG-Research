@@ -45,7 +45,9 @@ def test_build_writes_frozen_files():
         assert sum(r['answerable'] for r in test) == 280 and len(test) == 400
         assert all(set(r['gold_doc_ids']) <= removed for r in test if not r['answerable'])
         assert all(not set(r['gold_doc_ids']) & removed for r in test if r['answerable'])
-        assert manifest['actual_sizes']['reserve'] == 300
+        assert not (out / 'reserve.jsonl').exists()
+        assert manifest['actual_sizes'] == {'unanswerable': 120, 'dev': 100, 'answerable': 280}
+        assert set(manifest['sha256']) == {'dev.jsonl', 'test.jsonl', 'removed_doc_ids.json'}
         try:
             build_zalo_eval(questions, gold, out)
         except FileExistsError:

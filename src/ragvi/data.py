@@ -100,7 +100,7 @@ def split_zalo(gold, sizes=SIZES, seed=0):
 
 
 def build_zalo_eval(questions, gold, out_dir, sizes=SIZES, seed=0, tolerance=5):
-    """Ghi test.jsonl, dev.jsonl, reserve.jsonl, removed_doc_ids.json, manifest.json.
+    """Ghi test.jsonl, dev.jsonl, removed_doc_ids.json, manifest.json; không xuất các câu còn dư.
 
     Từ chối ghi đè: tập đánh giá đã đóng băng thì không dựng lại vào cùng thư mục.
     """
@@ -123,15 +123,14 @@ def build_zalo_eval(questions, gold, out_dir, sizes=SIZES, seed=0, tolerance=5):
                 for name in names for q in parts[name]]
 
     out.mkdir(parents=True, exist_ok=True)
-    files = {'test.jsonl': rows(['answerable', 'unanswerable']), 'dev.jsonl': rows(['dev']),
-             'reserve.jsonl': rows(['reserve'])}
+    files = {'test.jsonl': rows(['answerable', 'unanswerable']), 'dev.jsonl': rows(['dev'])}
     for name, data in files.items():
         (out / name).write_text(''.join(json.dumps(r, ensure_ascii=False) + '\n' for r in data), encoding='utf-8')
     (out / 'removed_doc_ids.json').write_text(json.dumps(removed, ensure_ascii=False, indent=0), encoding='utf-8')
 
     manifest = {
         'dataset': 'zalo_legal', 'seed': seed, 'target_sizes': sizes,
-        'actual_sizes': {name: len(qids) for name, qids in parts.items()},
+        'actual_sizes': {name: len(parts[name]) for name in sizes},
         'labeled_queries': len(gold), 'groups': len(set(group_of.values())),
         'removed_docs': len(removed),
         'sha256': {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(out.iterdir())},

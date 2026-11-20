@@ -275,6 +275,7 @@ def main(argv=None):
     parser.add_argument('paths', nargs='*', help='<answers.jsonl> <questions.jsonl> <corpus> <out.jsonl/.md>')
     parser.add_argument('--chunks', help='file chunks/*.jsonl (ví dụ __c3.jsonl) để lấy văn bản các chunk ngữ cảnh')
     parser.add_argument('--model', default='Qwen/Qwen2.5-7B-Instruct')
+    parser.add_argument('--llama-url', help='URL llama-server dùng mô hình judge riêng')
     parser.add_argument('--limit', type=int, help='chỉ chấm N câu trả lời được đầu tiên (ví dụ 20 câu dev ở Ngày 11)')
     parser.add_argument('--human-sheet', action='store_true', help='xuất phiếu gán nhãn tay (Ngày 12)')
     parser.add_argument('--kappa', nargs=2, metavar=('PHIEU_DA_CHAM', 'JUDGE_JSONL'), help='tính κ (Ngày 13)')
@@ -322,7 +323,12 @@ def main(argv=None):
 
     done = {(r['config'], r['qid']) for r in read_rows(out_path) if not r.get('error')}
     need = any(r.get('answerable', True) and (r['config'], r['qid']) not in done for r in answers)
-    judge_fn = load_generator(args.model) if need else (lambda p: '{}')
+    if need and args.llama_url:
+        from ragvi.generate import load_llamacpp
+
+        judge_fn = load_llamacpp(args.llama_url, args.model, max_new_tokens=1024)
+    else:
+        judge_fn = load_generator(args.model) if need else (lambda p: '{}')
     written = run_judge(answers, questions, context_of, gold_of, out_path, judge_fn, model_name=args.model)
     rows = [r for r in read_rows(out_path) if r.get('error') is None]
     errors = sum(r.get('error') is not None for r in read_rows(out_path))

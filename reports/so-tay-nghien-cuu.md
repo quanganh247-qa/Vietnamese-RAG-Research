@@ -327,7 +327,7 @@ Tập câu hỏi cố định dùng cho mọi cấu hình, gồm câu **trả l�
 2. **Nhóm theo điều luật vàng.** Hai truy vấn cùng nhóm nếu dùng chung ít nhất một điều luật vàng, trực tiếp hoặc bắc cầu. Ví dụ minh họa: q1 → {d1}, q2 → {d1, d2}, q3 → {d2}, q4 → {d9}. q1 và q3 không chung điều luật nào, nhưng cả hai chung với q2, nên {q1, q2, q3} là một nhóm và {q4} là nhóm khác. Mã dùng thuật toán union-find (hợp nhất – tìm gốc) trên đồ thị hai loại nút, truy vấn và điều luật.
 3. **Chia nhóm vào các phần.** Xáo thứ tự nhóm bằng seed 0, rồi lần lượt đưa **trọn** từng nhóm vào phần đầu tiên còn đủ chỗ theo thứ tự ưu tiên: không trả lời được (120), dev (100), trả lời được (280). Nhóm không vừa phần nào vào phần dự trữ. Nếu phần nào thiếu quá 5 câu so với mục tiêu thì báo lỗi để thử seed khác.
 4. **Tạo câu không trả lời được bằng cách loại điều luật:** mọi điều luật vàng của 120 câu đó bị loại khỏi kho. Mọi cấu hình dùng chung **một kho thu hẹp**. Mã kiểm tra không điều luật bị loại nào là điều luật vàng của câu ở phần khác.
-5. **Đóng băng:** ghi `test.jsonl` (280 + 120), `dev.jsonl`, `reserve.jsonl`, `removed_doc_ids.json`, và `manifest.json` chứa seed, kích thước mục tiêu và thực tế, số nhóm, số điều luật bị loại, mã băm SHA-256 từng file. Thư mục đầu ra đã có dữ liệu thì từ chối ghi đè.
+5. **Đóng băng:** ghi `test.jsonl` (280 + 120), `dev.jsonl`, `removed_doc_ids.json`, và `manifest.json` chứa seed, kích thước mục tiêu và thực tế, số nhóm, số điều luật bị loại, mã băm SHA-256 từng file. Các truy vấn dư không được xuất thành tập riêng; vẫn nằm trong bộ nguồn. Thư mục đầu ra đã có dữ liệu thì từ chối ghi đè.
 
 ### Nằm ở đâu trong mã và cách tự kiểm tra
 
@@ -443,6 +443,14 @@ Hội đồng có thể hỏi: *vì sao dùng H_gold thay vì faithfulness với
 | Bootstrap theo cụm | Cluster bootstrap | Lấy mẫu lại theo nhóm (title hoặc nhóm điều luật) khi tính khoảng tin cậy |
 
 ---
+
+## Chạy Colab không mở notebook và đọc EDA
+
+- **`colab_run.sh` (máy người dùng):** gọi Google Colab CLI bằng `uvx`, thử GPU kế tiếp khi backend từ chối hoặc endpoint cấp máy trả 502/503/504. Dùng tiền tố `content/` ở đường dẫn CLI để khớp `/content` trong kernel. Chỉ tải đầu vào cần thiết; lấy kết quả và dừng runtime kể cả khi job lỗi. Không dùng WSL.
+- **`scripts/colab_job.sh` (Colab):** khóa gói Python bằng `uv.lock`; dùng BGE-M3 cho truy xuất và llama.cpp CUDA cho sinh văn bản. Máy người dùng không tải trọng số GGUF. Bộ sinh llama.cpp dùng cùng prompt qua `--llama-url`, nhưng lượng tử hóa/giới hạn ngữ cảnh không tương đương với Transformers/NF4. Pilot 10 câu chỉ kiểm tra triển khai, không đo `H_gold`.
+- **`ragvi.benchmark`:** tạo đầu vào truy xuất từ toàn bộ split nguồn, tách test ViQuAD không nhãn khỏi phép tính Recall/MRR/nDCG; đối chiếu SHA-256 tập đóng băng và không ghi đè. Sinh cả dev/test với neo, closed-book và oracle; oracle chỉ có câu trả lời được. Qwen3-8B GGUF chấm độc lập, kế thừa giới hạn 3.000 ký tự cho mỗi phần ngữ cảnh/bằng chứng vàng của judge. `summary.json` tách lỗi JSON, câu từ chối, mẫu số từng chỉ số, và RAH ghép cặp; đây không phải điểm Phase B trước khi có đối chiếu nhãn người.
+- **`notebooks/06_eda_du_lieu.ipynb`:** xác minh cấu trúc Arrow/JSONL và tách dev/test; đếm BGE-M3 không cắt. Zalo có 10.719/61.425 điều dài hơn 512 token, so với 41/5.311 đoạn ViQuAD. Đây là lý do nên xem lỗi truy xuất theo độ dài và thử phân đoạn theo Khoản/Điểm; chưa chứng minh ảo giác giảm. Cụm câu chữ Zalo lớn nhất có 8 câu về xe máy và tai nạn; thay động từ *đỗ/chuyển hướng/tránh* có thể đổi điều khoản cần tìm. Cụm chữ là gợi ý đọc lỗi, không phải nhãn ngữ nghĩa. Dev ViQuAD chỉ có 3 bài, test có 118 bài.
+- **Cách đọc điểm:** so `H_gold` và độ đúng trên cùng bộ câu trả lời được, theo dõi fabrication và false refusal để không nhầm từ chối nhiều với cải thiện. Khi Recall@20 khá mà Recall@5 còn thấp, ưu tiên xem reranking; nếu cả hai thấp, xem phân đoạn và retriever. Đo RAH so oracle sau khi đối chiếu judge với nhãn người.
 
 ## Kết quả
 

@@ -182,7 +182,7 @@ def test_cli_eval_set_with_removed_docs(tmp_path, monkeypatch, capsys):
     kept = [d for d in DOC_IDS if d != 'b+2']
     index = build_bm25([CORPUS[d] for d in kept])
     assert rows[('bm25', 'q2')]['top'] == [kept[i] for i in top_k(bm25_scores(index, QUESTIONS['q2']))]
-    assert len((out / 'tokens' / 'zalo_legal__article__underthesea.jsonl').read_text().splitlines()) == 3
+    assert len((out / 'tokens' / 'zalo_legal__article__underthesea.jsonl').read_text(encoding='utf-8').splitlines()) == 3
 
     with pytest.raises(SystemExit):   # thiếu --run: không được ghi vào retrieval_zalo.jsonl
         main(['unused', str(out), '--questions', str(tmp_path / 'test.jsonl')])

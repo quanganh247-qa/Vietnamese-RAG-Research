@@ -138,6 +138,26 @@ def load_generator(model_name, max_new_tokens=256, load_in_4bit=True, max_input_
     return generate
 
 
+def load_llamacpp(base_url, model_name, max_new_tokens=256):
+    """Dùng llama-server qua API chat; không đổi prompt hoặc cách chấm."""
+    from urllib.request import Request, urlopen
+
+    url = base_url.rstrip('/') + '/v1/chat/completions'
+
+    def generate(prompt):
+        payload = {'model': model_name, 'messages': [{'role': 'user', 'content': prompt}],
+                   'temperature': 0, 'seed': 0, 'max_tokens': max_new_tokens}
+        request = Request(url, data=json.dumps(payload).encode('utf-8'),
+                          headers={'Content-Type': 'application/json'})
+        with urlopen(request, timeout=300) as response:
+            answer = json.load(response)['choices'][0]['message']['content']
+        if not isinstance(answer, str):
+            raise ValueError('llama-server không trả về câu trả lời dạng văn bản.')
+        return clean_generation(answer)
+
+    return generate
+
+
 def select_questions(questions, limit=None):
     """Chọn `limit` câu hỏi; riêng `limit=50` trên tập có cả hai loại (như dev ViQuAD) lấy đúng 35 trả lời được + 15 không (Ngày 8)."""
     if not limit or limit >= len(questions):
@@ -223,6 +243,7 @@ def main(argv=None):
     parser.add_argument('--retrieval', help='file retrieval_*.jsonl (bắt buộc khi config khác closed_book/oracle)')
     parser.add_argument('--method', help='nhãn phương pháp trong file retrieval (ví dụ dense[c3], hybrid[c3][word])')
     parser.add_argument('--model', default='Qwen/Qwen3-8B')
+    parser.add_argument('--llama-url', help='URL gốc của llama-server (mặc định dùng Transformers)')
     parser.add_argument('--ref-tokenizer', default=DEFAULT_MODEL)
     parser.add_argument('--limit', type=int, help='chỉ chạy trên N câu đầu (ví dụ 50 câu dev ở Ngày 8–9)')
     parser.add_argument('--top-n', type=int, default=TOP_N)
@@ -260,7 +281,7 @@ def main(argv=None):
     if need:
         from transformers import AutoTokenizer
         ref_tok = None if args.config == 'closed_book' else AutoTokenizer.from_pretrained(args.ref_tokenizer)
-        gen_fn = load_generator(args.model)
+        gen_fn = load_llamacpp(args.llama_url, args.model) if args.llama_url else load_generator(args.model)
     else:
         ref_tok, gen_fn = None, (lambda p: '')
 

@@ -7,6 +7,26 @@ from ragvi.judge import (blind_id, build_human_sheet, cohen_kappa, derive_judge_
 from ragvi.retrieval import read_rows
 
 
+def test_judge_llama_cli(tmp_path, monkeypatch):
+    import json
+    from ragvi import judge
+
+    question = {'qid': 'a', 'question': 'Ở đâu?', 'answerable': True, 'gold_doc_id': 'd'}
+    paths = [tmp_path / name for name in ('answers.jsonl', 'questions.jsonl', 'corpus.jsonl', 'judgments.jsonl')]
+    for path, row in zip(paths, [{**question, 'config': 'closed_book', 'answer': 'Hà Nội'}, question,
+                                 {'doc_id': 'd', 'text': 'Hà Nội'}]):
+        path.write_text(json.dumps(row) + '\n', encoding='utf-8')
+
+    def load(base, model, max_new_tokens):
+        assert base == 'http://127.0.0.1:8080' and model == 'judge' and max_new_tokens >= 512
+        return lambda prompt: '{"claims": [{"text": "Hà Nội", "supported_by_gold": true}], "correctness": 2}'
+
+    monkeypatch.setattr('ragvi.generate.load_llamacpp', load)
+    judge.main([*map(str, paths), '--model', 'judge', '--llama-url', 'http://127.0.0.1:8080'])
+    result = json.loads(paths[-1].read_text(encoding='utf-8'))
+    assert result['correctness'] == 2 and result['h_ctx'] is None
+
+
 def test_wrong_article_citation():
     res = wrong_article_citation('Theo khoản 2 Điều 15 và điều 20 của Luật này, mức phạt là...', ['01/2009/tt-bnn+15'])
     assert res == {'cited_articles': ['15', '20'], 'gold_articles': ['15'], 'wrong_article': True}

@@ -4,6 +4,12 @@ __pycache__/
 
 # Dữ liệu nằm trên Google Drive, không đưa vào kho mã
 /data/
+/results/
+
+# Cấu hình riêng hoặc khóa truy cập trên máy cá nhân
+.env
+.env.*
+!.env.example
 
 # CV cá nhân, không thuộc đề tài
 /CV/
