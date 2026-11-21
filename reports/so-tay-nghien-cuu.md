@@ -448,7 +448,7 @@ Hội đồng có thể hỏi: *vì sao dùng H_gold thay vì faithfulness với
 
 - **`colab_run.sh` (máy người dùng):** gọi Google Colab CLI bằng `uvx`, thử GPU kế tiếp khi backend từ chối hoặc endpoint cấp máy trả 502/503/504. Dùng tiền tố `content/` ở đường dẫn CLI để khớp `/content` trong kernel. Chỉ tải đầu vào cần thiết; lấy kết quả và dừng runtime kể cả khi job lỗi. Không dùng WSL.
 - **`scripts/colab_job.sh` (Colab):** khóa gói Python bằng `uv.lock`; dùng BGE-M3 cho truy xuất và llama.cpp CUDA cho sinh văn bản. Máy người dùng không tải trọng số GGUF. Bộ sinh llama.cpp dùng cùng prompt qua `--llama-url`, nhưng lượng tử hóa/giới hạn ngữ cảnh không tương đương với Transformers/NF4. Pilot 10 câu chỉ kiểm tra triển khai, không đo `H_gold`.
-- **`ragvi.benchmark`:** tạo đầu vào truy xuất từ toàn bộ split nguồn, tách test ViQuAD không nhãn khỏi phép tính Recall/MRR/nDCG; đối chiếu SHA-256 tập đóng băng và không ghi đè. Sinh cả dev/test với neo, closed-book và oracle; oracle chỉ có câu trả lời được. Qwen3-8B GGUF chấm độc lập, kế thừa giới hạn 3.000 ký tự cho mỗi phần ngữ cảnh/bằng chứng vàng của judge. `summary.json` tách lỗi JSON, câu từ chối, mẫu số từng chỉ số, và RAH ghép cặp; đây không phải điểm Phase B trước khi có đối chiếu nhãn người.
+- **`ragvi.benchmark`:** tạo đầu vào truy xuất từ toàn bộ split nguồn, tách test ViQuAD không nhãn khỏi phép tính Recall/MRR/nDCG; đối chiếu SHA-256 tập đóng băng và không ghi đè. Sinh cả dev/test với neo, closed-book và oracle; oracle chỉ có câu trả lời được. `unsloth/Qwen3.5-9B-GGUF:Q4_K_M` chạy qua `llama-server` với continuous batching (`--parallel` + `--cont-batching` + `ThreadPoolExecutor`), kế thừa giới hạn 3.000 ký tự cho mỗi phần ngữ cảnh/bằng chứng vàng của judge. `summary.json` tách lỗi JSON, câu từ chối, mẫu số từng chỉ số, và RAH ghép cặp; đây là điểm Judge sơ bộ trước khi đối chiếu nhãn người.
 - **`notebooks/06_eda_du_lieu.ipynb`:** xác minh cấu trúc Arrow/JSONL và tách dev/test; đếm BGE-M3 không cắt. Zalo có 10.719/61.425 điều dài hơn 512 token, so với 41/5.311 đoạn ViQuAD. Đây là lý do nên xem lỗi truy xuất theo độ dài và thử phân đoạn theo Khoản/Điểm; chưa chứng minh ảo giác giảm. Cụm câu chữ Zalo lớn nhất có 8 câu về xe máy và tai nạn; thay động từ *đỗ/chuyển hướng/tránh* có thể đổi điều khoản cần tìm. Cụm chữ là gợi ý đọc lỗi, không phải nhãn ngữ nghĩa. Dev ViQuAD chỉ có 3 bài, test có 118 bài.
 - **Cách đọc điểm:** so `H_gold` và độ đúng trên cùng bộ câu trả lời được, theo dõi fabrication và false refusal để không nhầm từ chối nhiều với cải thiện. Khi Recall@20 khá mà Recall@5 còn thấp, ưu tiên xem reranking; nếu cả hai thấp, xem phân đoạn và retriever. Đo RAH so oracle sau khi đối chiếu judge với nhãn người.
 
@@ -586,3 +586,18 @@ Chẩn đoán tiêu đề cha C5 trên 61.425 điều luật (cell 13 của `03_
 | Ước lượng thời gian nhúng | C1 | C3 | C4 | C5 | C5 không tiêu đề |
 |---|---|---|---|---|---|
 | Zalo, `BAAI/bge-m3` (phút, ước lượng từ ~18,7–20,9 văn bản/giây trên T4) | ~91–102 | ~103–115 | 54,8 (đã nhúng) | ~260–290 | ~260–290 |
+
+*(Với `bf16` + `batch_size=256` trên L4 và checkpoint mỗi 20.000 chunk, thời gian nhúng C3 Zalo thực tế giảm xuống **8,5 phút** = `251,8 chunk/giây`.)*
+
+### 20–21/11 – Baseline đầu-cuối (`C3–E3–R0`, `closed_book`, `oracle`) với `Qwen3.5-9B` (`llama.cpp` continuous batching)
+
+Chi tiết đầy đủ xem tại `reports/benchmark-colab-2026-11-20.md`. Tóm tắt các chỉ số chính trên tập kiểm tra đóng băng (`viquad_test` và `zalo_test`, mỗi bộ 400 câu = 280 trả lời được + 120 không trả lời được, mô hình sinh và judge `unsloth/Qwen3.5-9B-GGUF:Q4_K_M`, `n_judge_errors = 0` trên toàn bộ 2.211 lượt chấm):
+
+| Tập | Cấu hình | Recall@5 / @20 | `correct_refusal` | `fabrication` | `false_refusal` | `contains_gold` | `F1` | `correctness` (0–2) | `H_gold` (`n`) | `H_ctx` (`n`) | `RAH` vs `oracle` |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| `viquad_test` | `closed_book` | — | 88,33% | 11,67% | 75,00% | 3,93% | 0,0642 | 0,1964 | 77,14% (70) | — | — |
+| `viquad_test` | `oracle` | — | — | — | 12,50% | 57,14% | 0,4326 | 1,7000 | 10,20% (245) | 1,22% (245) | — |
+| `viquad_test` | `C3-E3-R0` | 88,93% / 95,71% | 64,17% | 35,83% | 15,71% | 52,14% | 0,3982 | 1,5643 | 19,07% (236) | 2,54% (236) | **+6,76%** (222 cặp) |
+| `zalo_test` | `closed_book` | — | 57,50% | 42,50% | 55,71% | — | — | 0,1000 | 92,74% (124) | — | — |
+| `zalo_test` | `oracle` | — | — | — | 14,29% | — | — | 1,1607 | 31,67% (240) | 31,67% (240) | — |
+| `zalo_test` | `C3-E3-R0` | 81,43% / 92,68% | 56,67% | 43,33% | 27,50% | — | — | 1,0679 | 34,48% (203) | 10,34% (203) | **+6,35%** (189 cặp) |

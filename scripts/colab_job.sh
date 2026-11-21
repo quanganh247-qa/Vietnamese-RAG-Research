@@ -30,15 +30,20 @@ if ! command -v nvcc >/dev/null; then
   echo 'Runtime GPU thiếu trình biên dịch CUDA (nvcc).' >&2
   exit 1
 fi
-uv sync --locked --python 3.12 --no-dev --extra rag
+uv sync --locked --python 3.12 --no-dev --extra rag --extra eda
 if [[ ! -d data/processed && -n "${RAGVI_DRIVE_URL:-}" ]]; then
-  uv run --no-sync python -m pip install -q gdown
   uv run --no-sync gdown --no-cookies --timeout 60 --retries 2 --continue -O data "$RAGVI_DRIVE_URL"
 fi
 
 py=(uv run --no-sync python -m)
 corpus=data/eval/viquad/corpus.jsonl
 retrieval=/content/retrieval
+mkdir -p "$retrieval/chunks"
+if [[ -d data/retrieval_cache ]]; then
+  cp data/retrieval_cache/retrieval_*.jsonl "$retrieval/" 2>/dev/null || true
+  cp data/retrieval_cache/chunks/*.jsonl "$retrieval/chunks/" 2>/dev/null || true
+  cp data/retrieval_cache/answers_*.jsonl data/retrieval_cache/judge_*.jsonl "$out/" 2>/dev/null || true
+fi
 if [[ $mode == benchmark ]]; then
   "${py[@]}" ragvi.benchmark prepare data "$out"
   for dataset in viquad zalo; do
@@ -56,6 +61,10 @@ if [[ $mode == benchmark ]]; then
       cp "$retrieval/retrieval_$tag.jsonl" "$out/"
     done
   done
+  if [[ ! -f data/retrieval_cache/chunks/zalo_legal__c3.jsonl ]]; then
+    mkdir -p "$out/chunks"
+    cp "$retrieval/chunks/"*.jsonl "$out/chunks/" 2>/dev/null || true
+  fi
 else
 # Pilot cố định: 5 câu có và 5 câu không có đáp án; oracle chỉ chạy nhóm có đáp án (D5).
 uv run --no-sync python - "$out" <<'PY'
@@ -82,22 +91,34 @@ model_repo=unsloth/Qwen3.5-9B-GGUF
 model_revision=1daf391c47cef14242f238b819fbe6fd500d624b
 model_alias="$model_repo:Q4_K_M"
 model_gguf=/content/models/Qwen3.5-9B-Q4_K_M.gguf
-git init -q /content/llama.cpp
-git -C /content/llama.cpp fetch -q --depth 1 https://github.com/ggml-org/llama.cpp.git "$llama_ref"
-git -C /content/llama.cpp checkout -q --detach FETCH_HEAD
-cmake -S /content/llama.cpp -B /content/llama.cpp/build -DCMAKE_BUILD_TYPE=Release \
-  -DGGML_CUDA=ON -DCMAKE_CUDA_ARCHITECTURES="${cap/.}" -DLLAMA_BUILD_TESTS=OFF -DLLAMA_BUILD_EXAMPLES=OFF
-cmake --build /content/llama.cpp/build --target llama-server --parallel 2
+llama_bin_cache=data/retrieval_cache/llama-bin-${cap/.}.tar.gz
+if [[ -f $llama_bin_cache ]]; then
+  mkdir -p /content/llama.cpp/build/bin
+  tar -xzf "$llama_bin_cache" -C /content/llama.cpp/build/bin
+else
+  git init -q /content/llama.cpp
+  git -C /content/llama.cpp fetch -q --depth 1 https://github.com/ggml-org/llama.cpp.git "$llama_ref"
+  git -C /content/llama.cpp checkout -q --detach FETCH_HEAD
+  if [[ -f /content/llama.cpp/scripts/ui-assets.cmake ]]; then
+    sed -i 's/message(FATAL_ERROR/message(WARNING/g' /content/llama.cpp/scripts/ui-assets.cmake
+  fi
+  cmake -S /content/llama.cpp -B /content/llama.cpp/build -DCMAKE_BUILD_TYPE=Release \
+    -DGGML_CUDA=ON -DCMAKE_CUDA_ARCHITECTURES="${cap/.}" -DCMAKE_CUDA_FLAGS="--threads 4" \
+    -DLLAMA_BUILD_TESTS=OFF -DLLAMA_BUILD_EXAMPLES=OFF
+  cmake --build /content/llama.cpp/build --target llama-server --parallel "$(nproc)"
+  tar -czf "$out/llama-bin-${cap/.}.tar.gz" -C /content/llama.cpp/build/bin .
+fi
 
 mkdir -p /content/models
 curl -fL --retry 3 -o "$model_gguf" "https://huggingface.co/$model_repo/resolve/$model_revision/${model_gguf##*/}"
 printf 'llama.cpp=%s\nmodel=%s\nrevision=%s\njudge=%s\njudge_revision=%s\n' \
   "$llama_ref" "$model_alias" "$model_revision" "$model_alias" "$model_revision" > "$out/model.txt"
-base=http://127.0.0.1:8080
+base=http://127.0.0.1:18080
 start_server() {
   local alias=$1 gguf=$2 ctx=$3 slots=$4 log=$5
   shift 5
-  /content/llama.cpp/build/bin/llama-server --host 127.0.0.1 --port 8080 --device CUDA0 --n-gpu-layers 99 \
+  LD_LIBRARY_PATH=/content/llama.cpp/build/bin:${LD_LIBRARY_PATH:-} \
+    /content/llama.cpp/build/bin/llama-server --host 127.0.0.1 --port 18080 --device CUDA0 --n-gpu-layers 99 \
     --ctx-size "$ctx" --parallel "$slots" --cont-batching --batch-size 2048 --ubatch-size 512 \
     --alias "$alias" --model "$gguf" "$@" > "$log" 2>&1 &
   server=$!
@@ -113,10 +134,9 @@ start_server() {
 }
 
 vram_mib=$(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits | head -n1 | tr -d ' ')
-slots=4
-if [[ "${vram_mib:-0}" -ge 20000 ]]; then slots=8; fi
+slots=6
+if [[ "${vram_mib:-0}" -ge 20000 ]]; then slots=12; fi
 ctx=$((4096 * slots))
-if [[ $mode == benchmark && "${vram_mib:-0}" -ge 20000 ]]; then ctx=$((8192 * slots)); fi
 start_server "$model_alias" "$model_gguf" "$ctx" "$slots" "$out/llama-server.log" \
   --jinja --chat-template-kwargs '{"enable_thinking":false}'
 model=(--llama-url "$base" --model "$model_alias" --workers "$slots")

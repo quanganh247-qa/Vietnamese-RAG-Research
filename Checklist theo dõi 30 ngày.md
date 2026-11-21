@@ -50,17 +50,17 @@ Dùng cùng `Kế hoạch chi tiết 30 ngày.md`. Mục tiêu từng ngày đư
 
 | Xong | Ngày | Mục tiêu cuối ngày | Ngày đạt | Giờ | Ghi chú |
 |---|---|---|---|---|---|
-| [x] | Thứ Năm 19/11 | Đã chọn một mô hình sinh, kèm số liệu so sánh trên 50 câu dev | 18/11 | | `04_tuan2_sinh_va_judge.ipynb` cell 28 (50 câu dev ViQuAD: 35 trả lời được + 15 không, oracle 4-bit): **`Qwen/Qwen2.5-7B-Instruct`** đạt `correct_refusal 0,80` (vs `0,533` của `Qwen/Qwen3-8B`), `contains_gold 0,457`, `26,7 câu/phút` → chọn **`Qwen/Qwen2.5-7B-Instruct`** làm mô hình sinh và **`Qwen/Qwen3-8B`** làm mô hình judge |
-| [x] | Thứ Sáu 20/11 | Một lệnh chạy được từ câu hỏi đến câu trả lời cho cấu hình neo, closed-book và oracle; có ước lượng số giờ GPU cho Giai đoạn B | 18/11 | | Đã chạy trọn bộ `C3-E3-R0`, `closed_book`, `oracle` trên dev ViQuAD và Zalo (`04_tuan2_sinh_va_judge.ipynb` cell 30, 32). Ước lượng Giai đoạn B (6.400 lượt): **~3,99 giờ GPU** (rất dưới ngưỡng 20 giờ → giữ nguyên 400 câu mỗi bộ). Lượt Colab CLI + GGUF riêng; đã cấp được L4, chưa xác nhận sinh xong trên luồng mới. |
+| [x] | Thứ Năm 19/11 | Đã chọn một mô hình sinh, kèm số liệu so sánh trên 50 câu dev | 18/11 | | `04_tuan2_sinh_va_judge.ipynb` cell 28 (50 câu dev ViQuAD: 35 trả lời được + 15 không, oracle 4-bit): ban đầu chọn `Qwen2.5-7B-Instruct` (`correct_refusal 0,80` vs `0,533` của `Qwen3-8B`); ngày 20/11 chủ đề tài thống nhất nâng cấp cả mô hình sinh và judge lên **`Qwen/Qwen3.5-9B`** (`unsloth/Qwen3.5-9B-GGUF:Q4_K_M`, tắt thinking) |
+| [x] | Thứ Sáu 20/11 | Một lệnh chạy được từ câu hỏi đến câu trả lời cho cấu hình neo, closed-book và oracle; có ước lượng số giờ GPU cho Giai đoạn B | 21/11 | | Đã chạy trọn bộ `C3-E3-R0`, `closed_book`, `oracle` trên **cả dev và test** của ViQuAD và Zalo bằng `bash colab_run.sh benchmark` với `unsloth/Qwen3.5-9B-GGUF:Q4_K_M` qua `llama.cpp` continuous batching (`--parallel 8` trên L4, `--parallel 12` trên A100). Tốc độ sinh `C3-E3-R0`: `16,0–16,3 câu/phút` (ViQuAD), `10,5–13,9 câu/phút` (Zalo) → ước lượng Giai đoạn B (6.400 lượt): **~6,5–10,2 giờ GPU** (< 20 giờ → giữ nguyên 400 câu mỗi bộ) |
 | [ ] | Thứ Bảy 21/11 | Reranker R1 chạy được trên dev; 24 lượt nhúng cho Giai đoạn A đã khởi động (8 lượt `BAAI/bge-m3` xếp trước) và đang lưu đệm | | | Đã xác minh E2/E4 (`XLMRobertaTokenizer`, E2=8192, E4=512) và chạy xong R1 trên dev (Zalo dev Recall@5 tăng `0,6300 → 0,7800`, nDCG@5 `0,4712 → 0,6034`). Đã xong **6/8** lượt `BAAI/bge-m3` (ViQuAD c1/c3/c4, Zalo c1/c3/c4); còn `c5` và `c5_nohead` chuyển sang `05_tuan2_tiep_tuc.ipynb` với checkpoint mỗi 20.000 chunk + `bf16`/`fp16` |
-| [ ] | Chủ nhật 22/11 | Judge trả về JSON hợp lệ trên 20 câu dev; chỉ số "nhầm điều luật" chạy được | | | |
+| [x] | Chủ nhật 22/11 | Judge trả về JSON hợp lệ trên 20 câu dev; chỉ số "nhầm điều luật" chạy được | 21/11 | | `unsloth/Qwen3.5-9B-GGUF:Q4_K_M` (tắt thinking, `--parallel 12`) chấm xong toàn bộ **2.211/2.211 câu trả lời có đáp án** trên cả `viquad_{dev,test}` và `zalo_{dev,test}` với **100% JSON hợp lệ (`n_judge_errors = 0`, `n_judge_missing = 0`)**. Chỉ số "nhầm điều luật" (`wrong_article`) chạy trên toàn bộ Zalo dev/test ([bảng tổng hợp](reports/benchmark-colab-2026-11-20.md)) |
 | [ ] | Thứ Hai 23/11 | Có 100 câu trả lời dev đã xáo trộn để gán nhãn; 50 câu đầu đã có nhãn người | | | |
 | [ ] | Thứ Ba 24/11 | 100 câu có đủ nhãn người; có Cohen's κ giữa judge và người cho H_gold, H_ctx và correctness | | | |
 | [ ] | Thứ Tư 25/11 | Có quyết định tiếp tục hay chuyển phương án dự phòng; prompt, cấu hình và tập test đã đóng băng (thẻ `freeze-b`); người hướng dẫn đã nhận bản tóm tắt thiết kế | | | |
 
 **Cổng kiểm tra cuối giai đoạn:**
 
-- [ ] Pipeline đầu-cuối chạy được trên dev của cả hai bộ
+- [x] Pipeline đầu-cuối chạy được trên dev của cả hai bộ
 - [ ] Tập test, prompt và danh sách cấu hình đã đóng băng
 - [ ] κ của H_gold từ 0,6 trở lên
 
@@ -142,9 +142,9 @@ Dùng cùng `Kế hoạch chi tiết 30 ngày.md`. Mục tiêu từng ngày đư
 |---|---|---|---|---|
 | [x] | 13/11 | BM25 tách từ hay theo âm tiết | Tách từ bằng underthesea | Quy tắc ghi trước: ước lượng 19,2 phút cho cả kho, dưới ngưỡng 30 phút (đo 14/11) |
 | [x] | 17/11 | Có thay câu không trả lời được không | Không thay câu; loại thêm bản trùng mã `nd-cp` ↔ `nđ-cp` trong kho thu hẹp Zalo | ViQuAD 2/30 = 6,7% (≤ 20%). Zalo 8/30 = 26,7%, trong đó 2 câu do bản trùng `24/2020/nd-cp+*`; loại bản trùng còn 6/30 = 20,0% (≤ 20%), giữ nguyên 400 câu test (chốt 18/11) |
-| [x] | 19/11 | Mô hình sinh | `Qwen/Qwen2.5-7B-Instruct` (4-bit NF4) | Theo tiêu chí ghi trước trên 50 câu dev ViQuAD (35+15): `correct_refusal` 80,0% vs 53,3% của `Qwen/Qwen3-8B`; `Qwen/Qwen3-8B` dùng làm judge |
-| [x] | 20/11 | Giữ 400 hay giảm còn 300 câu mỗi bộ | Giữ nguyên 400 câu mỗi bộ | Tốc độ sinh đo thật 26,7 câu/phút → ước lượng ~3,99 giờ GPU cho 6.400 lượt, thấp hơn nhiều ngưỡng 20 giờ |
-| [x] | 22/11 | Mô hình judge | `Qwen/Qwen3-8B` (4-bit NF4, tắt thinking) | Ứng viên còn lại của Ngày 8, khác mô hình sinh, chạy cục bộ không tốn phí API |
+| [x] | 19/11 | Mô hình sinh | `Qwen/Qwen3.5-9B` (`unsloth/Qwen3.5-9B-GGUF:Q4_K_M`, tắt thinking) | Ngày 18/11 thử nghiệm ban đầu với `Qwen2.5-7B-Instruct`; ngày 20/11 chủ đề tài chốt nâng cấp lên `Qwen3.5-9B` kèm continuous batching qua `llama.cpp` |
+| [x] | 20/11 | Giữ 400 hay giảm còn 300 câu mỗi bộ | Giữ nguyên 400 câu mỗi bộ | Tốc độ sinh `C3-E3-R0` đo thật 10,5–16,3 câu/phút (55,5 câu/phút ở `closed_book`) → ước lượng ~6,5–10,2 giờ GPU cho 6.400 lượt, dưới ngưỡng 20 giờ |
+| [x] | 22/11 | Mô hình judge | `Qwen/Qwen3.5-9B` (`unsloth/Qwen3.5-9B-GGUF:Q4_K_M`, tắt thinking) | Chủ đề tài chốt dùng thống nhất `Qwen3.5-9B` cho cả sinh và judge (100% JSON hợp lệ trên 2.211/2.211 lượt chấm) |
 | [ ] | 25/11 | Tiếp tục hay chuyển phương án dự phòng | | |
 
 ## Việc chờ người khác
@@ -175,9 +175,12 @@ Ba việc tốn thời gian hơn dự kiến nhất (dùng để ước lượng
 
 ## Nhật ký thực hiện
 
-### 20/11 – Colab CLI và khám phá dữ liệu bổ sung
+### 20–21/11 – Colab CLI, hoàn tất baseline `Qwen3.5-9B` với continuous batching và khám phá dữ liệu bổ sung
 
-- `colab_run.sh` điều phối G4 → A100 → L4 → T4. CLI đã xác thực và cấp được L4 sau khi G4/A100 trả 503. Pilot dừng tại bước mở tệp upload do đường dẫn CLI thiếu `content/`; đã sửa cặp đường dẫn upload/download và gửi lượt `benchmark`. Đầu vào kiểm tại máy: 39.569 câu nguồn ViQuAD, 788 truy vấn nguồn Zalo, 1.000 câu dev/test đóng băng. Lượt benchmark thật trên L4 đã hoàn thành truy xuất C3–E3–R0 ([bảng tổng hợp](reports/benchmark-colab-2026-11-20.md)). Recall@5 nguồn: ViQuAD train 87,44% (19.238 câu đúng điều kiện chấm), validation 87,03% (2.653 câu); chạy đủ 7.301 câu test nguồn, không có nhãn để chấm. Zalo nguồn 80,96% (788 câu). Recall@5 test đóng băng: ViQuAD 88,93%, Zalo 81,43% (280 câu có đáp án mỗi bộ). Đang biên dịch llama.cpp; chưa có điểm sinh/chấm, không đánh dấu thêm mục tiêu Phase B.
+- `colab_run.sh` điều phối G4 → A100 → L4 → T4. CLI đã xác thực và hoàn tất toàn bộ lượt `benchmark` trên L4 (23 GB) và A100 (40 GB) với **`unsloth/Qwen3.5-9B-GGUF:Q4_K_M`** (revision `1daf391c47cef14242f238b819fbe6fd500d624b`) qua `llama-server` (`--parallel 8/12 --cont-batching`, cổng `18080` để tránh trùng cổng `8080` nội bộ của Colab) và `ThreadPoolExecutor` trong `generate.py`/`judge.py`.
+- Kết quả đầy đủ 6 tập truy xuất (`C3–E3–R0`), 2.737 câu trả lời (`closed_book`, `oracle`, `C3-E3-R0` trên `viquad_{dev,test}` và `zalo_{dev,test}`) và 2.211 lượt chấm Judge sơ bộ (**0 lỗi JSON, 0 câu thiếu**) được ghi tại [bảng tổng hợp](reports/benchmark-colab-2026-11-20.md):
+  - `viquad_test` (400 câu): `C3-E3-R0` đạt `F1 = 0,3982`, `contains_gold = 52,14%`, `correctness = 1,5643/2`, `H_gold = 19,07%`, `H_ctx = 2,54%`, `RAH = +6,76%` so với `oracle` (`H_gold = 10,20%`, `F1 = 0,4326`).
+  - `zalo_test` (400 câu): `C3-E3-R0` đạt `correctness = 1,0679/2`, `false_refusal = 27,50%` (giảm từ `55,71%` ở `closed_book`), `H_gold = 34,48%`, `H_ctx = 10,34%`, `RAH = +6,35%` so với `oracle` (`H_gold = 31,67%`, `correctness = 1,1607/2`).
 - Chạy `notebooks/06_eda_du_lieu.ipynb` trên bản dữ liệu thật đã tải về. BGE-M3 đếm 1.135.938 token trên 5.311 đoạn ViQuAD và 21.075.880 token trên 61.425 điều Zalo (tiêu đề + thân). Tỷ lệ dài hơn 512 token lần lượt 0,77% và 17,45%. Cụm gần câu chữ dev: ViQuAD 2/100 câu, Zalo 24/100 câu.
 - Bỏ file dự trữ riêng của Zalo khỏi dữ liệu local và trình sinh tập eval; dữ liệu thô, tập đánh giá dev/test và các đầu ra notebook lịch sử giữ nguyên.
 

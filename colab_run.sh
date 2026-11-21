@@ -4,6 +4,7 @@ set -euo pipefail
 cd "$(dirname "$0")"
 
 mode=${1:-rag}
+if [[ -n "${2:-}" ]]; then RAGVI_DRIVE_URL="$2"; fi
 case "$mode" in
   -h|--help) echo 'Cách dùng: bash colab_run.sh [rag|benchmark|eda]'; exit 0 ;;
   rag|benchmark|eda) ;;
@@ -16,6 +17,7 @@ fi
 if [[ -n "${RAGVI_DRIVE_URL:-}" ]]; then
   job_env+=(--env "RAGVI_DRIVE_URL=$RAGVI_DRIVE_URL")
 fi
+export PATH="$PATH:$HOME/.local/bin"
 if ! command -v uvx >/dev/null; then
   echo 'Cần cài uv và thêm uvx vào PATH: https://docs.astral.sh/uv/getting-started/installation/' >&2
   exit 1
@@ -48,6 +50,9 @@ case "$mode" in
       : "${RAGVI_DRIVE_URL:?Thư mục data/ cục bộ trống; hãy đặt RAGVI_DRIVE_URL thành URL thư mục dữ liệu Drive chia sẻ.}"
     fi ;;
   benchmark)
+    if [[ -d data/retrieval_cache ]]; then
+      files+=(data/retrieval_cache)
+    fi
     if [[ -d data/processed/viquad ]]; then
       files+=(data/processed/{viquad,zalo_legal} data/eval/viquad/{dev,test,corpus}.jsonl
         data/eval/zalo/{dev,test}.jsonl data/eval/{viquad,zalo}/manifest.json data/eval/zalo/removed_doc_ids.json)
