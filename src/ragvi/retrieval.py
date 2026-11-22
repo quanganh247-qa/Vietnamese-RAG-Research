@@ -36,6 +36,13 @@ def cached_chunks(docs, chunking, path, titles=None, tokenizer_name=DEFAULT_MODE
     rows = read_rows(path)
     if rows and {r[1] for r in rows} == set(docs):
         return [tuple(r) for r in rows]
+    if chunking == 'c5_nohead':
+        c5_rows = read_rows(Path(path).with_name(Path(path).name.replace('__c5_nohead.', '__c5.')))
+        if c5_rows and {r[1] for r in c5_rows} == set(docs):
+            out = [(r[0], r[1], r[2], r[3], docs[r[1]][r[2]:r[3]]) for r in c5_rows]
+            Path(path).parent.mkdir(parents=True, exist_ok=True)
+            Path(path).write_text(''.join(json.dumps(list(c), ensure_ascii=False) + '\n' for c in out), encoding='utf-8')
+            return out
 
     from transformers import AutoTokenizer
     from ragvi.chunking import chunk_document, chunk_fixed, chunk_sentence, chunk_struct
@@ -85,9 +92,19 @@ def cached_tokens(doc_ids, texts, path, tokenize=tokenize_words):
     if missing:
         start = time.perf_counter()
         with open_append(path) as f:
-            for d, t in missing:
-                cache[d] = ' '.join(tokenize(t))
-                f.write(json.dumps([d, cache[d]], ensure_ascii=False) + '\n')
+            if tokenize is tokenize_words and len(missing) >= 200:
+                from concurrent.futures import ProcessPoolExecutor
+                import os
+
+                workers = min(os.cpu_count() or 2, 12)
+                with ProcessPoolExecutor(max_workers=workers) as ex:
+                    for (d, _), toks in zip(missing, ex.map(tokenize_words, [t for _, t in missing], chunksize=256)):
+                        cache[d] = ' '.join(toks)
+                        f.write(json.dumps([d, cache[d]], ensure_ascii=False) + '\n')
+            else:
+                for d, t in missing:
+                    cache[d] = ' '.join(tokenize(t))
+                    f.write(json.dumps([d, cache[d]], ensure_ascii=False) + '\n')
         print(f'Đã tách từ {len(missing)} tài liệu trong {time.perf_counter() - start:.1f} giây, đệm tại {path}')
     return [cache[d].split() for d in doc_ids]
 

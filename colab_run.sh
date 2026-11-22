@@ -6,9 +6,9 @@ cd "$(dirname "$0")"
 mode=${1:-rag}
 if [[ -n "${2:-}" ]]; then RAGVI_DRIVE_URL="$2"; fi
 case "$mode" in
-  -h|--help) echo 'Cách dùng: bash colab_run.sh [rag|benchmark|eda]'; exit 0 ;;
-  rag|benchmark|eda) ;;
-  *) echo 'Chọn rag (mặc định), benchmark hoặc eda.' >&2; exit 2 ;;
+  -h|--help) echo 'Cách dùng: bash colab_run.sh [rag|benchmark|phase_a|eda]'; exit 0 ;;
+  rag|benchmark|phase_a|eda) ;;
+  *) echo 'Chọn rag (mặc định), benchmark, phase_a hoặc eda.' >&2; exit 2 ;;
 esac
 job_env=(--env "RAGVI_JOB_MODE=$mode")
 if [[ $mode == eda ]]; then
@@ -49,7 +49,7 @@ case "$mode" in
     else
       : "${RAGVI_DRIVE_URL:?Thư mục data/ cục bộ trống; hãy đặt RAGVI_DRIVE_URL thành URL thư mục dữ liệu Drive chia sẻ.}"
     fi ;;
-  benchmark)
+  benchmark|phase_a)
     if [[ -d data/retrieval_cache ]]; then
       files+=(data/retrieval_cache)
     fi
@@ -62,7 +62,11 @@ case "$mode" in
   eda) files+=(notebooks/06_eda_du_lieu.ipynb) ;;
 esac
 # Chỉ tải lên đầu vào cần thiết; chia gói > 15 MB thành các phần nhỏ để không vượt giới hạn PUT của Colab proxy.
-tar -czf "$tmp/project.tar.gz" --exclude='__pycache__' --exclude='zalo_legal__c3.jsonl' "${files[@]}"
+extra_excludes=()
+if [[ $mode == phase_a ]]; then
+  extra_excludes+=(--exclude='llama-bin-*.tar.gz' --exclude='retrieval_*_source.jsonl' --exclude='answers_*.jsonl' --exclude='judge_*.jsonl')
+fi
+tar -czf "$tmp/project.tar.gz" --exclude='__pycache__' --exclude='zalo_legal__c3.jsonl' "${extra_excludes[@]}" "${files[@]}"
 archive="$tmp/project.tar.gz"
 if command -v cygpath >/dev/null; then archive=$(cygpath -m "$archive"); fi
 

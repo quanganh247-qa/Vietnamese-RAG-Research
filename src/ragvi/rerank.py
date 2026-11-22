@@ -23,13 +23,17 @@ def rerank_top(query, candidate_ids, text_of, scorer):
     return [candidate_ids[i] for i in top_k(scores, len(candidate_ids))]
 
 
-def load_reranker(model_name=DEFAULT_RERANKER, max_length=512, batch_size=32):
-    """Nạp CrossEncoder và trả về hàm `scorer(query, passages) -> danh sách điểm`."""
+def load_reranker(model_name=DEFAULT_RERANKER, max_length=512, batch_size=0):
+    """Nạp CrossEncoder (tự bật bf16/fp16 trên GPU) và trả về hàm `scorer(query, passages) -> danh sách điểm`."""
     from sentence_transformers import CrossEncoder
+    from ragvi.retrieval import _auto_batch_size
 
+    bs, dtype = _auto_batch_size(batch_size)
     model = CrossEncoder(model_name, max_length=max_length)
+    if dtype is not None and hasattr(model, 'model'):
+        model.model.to(dtype=dtype)
     return lambda query, passages: model.predict(
-        [(query, p) for p in passages], batch_size=batch_size, show_progress_bar=False)
+        [(query, p) for p in passages], batch_size=bs, show_progress_bar=False)
 
 
 def run_rerank(retrieval_rows, questions, gold, text_of, out_path, scorer, method, out_method=None, hit_fn=None):
@@ -82,10 +86,10 @@ def main(argv=None):
     parser.add_argument('questions_path', help='dev.jsonl hoặc test.jsonl')
     parser.add_argument('units_path', help='thư mục zalo_legal, corpus.jsonl ViQuAD, hoặc chunks/*.jsonl')
     parser.add_argument('out_path', help='file JSONL đầu ra (có thể trùng retrieval_path)')
-    parser.add_argument('--method', default='dense', help='nhãn phương pháp đầu vào trong retrieval_path')
+    parser.add_argument('--method', default='dense', help='nhãn phương pháp đầu vào (có thể phân tách bằng dấu phẩy)')
     parser.add_argument('--out-method', help='nhãn phương pháp đầu ra (mặc định: <method>+r1)')
     parser.add_argument('--model', default=DEFAULT_RERANKER)
-    parser.add_argument('--batch-size', type=int, default=32)
+    parser.add_argument('--batch-size', type=int, default=0)
     args = parser.parse_args(argv)
 
     q_rows = load_jsonl(args.questions_path)
@@ -97,9 +101,10 @@ def main(argv=None):
     text_of, parent_of, span_of = load_units(args.units_path)
     ret_rows = read_rows(args.retrieval_path)
 
-    out_method = args.out_method or f'{args.method}+r1'
+    methods = [m.strip() for m in args.method.split(',') if m.strip()]
+    out_methods = [args.out_method if (args.out_method and len(methods) == 1) else f'{m}+r1' for m in methods]
     done = {(r['method'], r['qid']) for r in read_rows(args.out_path)}
-    need = any((out_method, q) not in done for q in questions)
+    need = any((om, q) not in done for om in out_methods for q in questions)
     scorer = load_reranker(args.model, batch_size=args.batch_size) if need else (lambda q, ps: [])
 
     def hit_fn(qid, top):
@@ -107,11 +112,12 @@ def main(argv=None):
             return metrics(viquad_hits([span_of[c] for c in top], next(iter(gold[qid])), answers_of[qid]), 1)
         return metrics(zalo_hits([parent_of[c] for c in top], gold[qid]), len(gold[qid]))
 
-    written = run_rerank(ret_rows, questions, gold, text_of, args.out_path, scorer,
-                         args.method, out_method=out_method, hit_fn=hit_fn)
-    print(f'Ghi thêm {written} dòng ({out_method}) vào {args.out_path}')
-    base_table = summarize(args.retrieval_path, [args.method])
-    rerank_table = summarize(args.out_path, [out_method])
+    for m, om in zip(methods, out_methods):
+        written = run_rerank(ret_rows, questions, gold, text_of, args.out_path, scorer,
+                             m, out_method=om, hit_fn=hit_fn)
+        print(f'Ghi thêm {written} dòng ({om}) vào {args.out_path}')
+    base_table = summarize(args.retrieval_path, methods)
+    rerank_table = summarize(args.out_path, out_methods)
     print(format_table({**base_table, **rerank_table}))
 
 

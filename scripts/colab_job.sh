@@ -61,6 +61,52 @@ if [[ $mode == benchmark ]]; then
       cp "$retrieval/retrieval_$tag.jsonl" "$out/"
     done
   done
+elif [[ $mode == phase_a ]]; then
+  echo "=== [Phase A] Rerank R1 trên viquad_dev & zalo_dev ==="
+  "${py[@]}" ragvi.retrieval "$corpus" "$retrieval" --questions data/eval/viquad/dev.jsonl \
+    --methods dense --chunking c3 --run viquad_dev
+  "${py[@]}" ragvi.rerank "$retrieval/retrieval_viquad_dev.jsonl" data/eval/viquad/dev.jsonl \
+    "$retrieval/chunks/viquad__c3.jsonl" "$retrieval/retrieval_viquad_dev.jsonl" --method 'dense[c3]'
+  cp "$retrieval/retrieval_viquad_dev.jsonl" "$out/"
+
+  "${py[@]}" ragvi.retrieval data/processed/zalo_legal "$retrieval" --questions data/eval/zalo/dev.jsonl \
+    --methods dense --chunking c3 --run zalo_dev
+  "${py[@]}" ragvi.rerank "$retrieval/retrieval_zalo_dev.jsonl" data/eval/zalo/dev.jsonl \
+    "$retrieval/chunks/zalo_legal__c3.jsonl" "$retrieval/retrieval_zalo_dev.jsonl" --method 'dense[c3]'
+  cp "$retrieval/retrieval_zalo_dev.jsonl" "$out/"
+
+  if [[ ! -f $retrieval/retrieval_viquad_phase_a.jsonl && -f $retrieval/retrieval_viquad_test.jsonl ]]; then
+    cp "$retrieval/retrieval_viquad_test.jsonl" "$retrieval/retrieval_viquad_phase_a.jsonl"
+  fi
+  for c in c1 c3 c4; do
+    echo "=== [Phase A] ViQuAD test chunking=$c (BM25[word], E3=bge-m3, Hybrid[word], E2, E4 + R1) ==="
+    time "${py[@]}" ragvi.retrieval "$corpus" "$retrieval" --run viquad_phase_a --chunking "$c" \
+      --methods bm25,dense,hybrid --tokenizer word --questions data/eval/viquad/test.jsonl
+    time "${py[@]}" ragvi.retrieval "$corpus" "$retrieval" --run viquad_phase_a --chunking "$c" \
+      --methods dense --model AITeamVN/Vietnamese_Embedding_v2 --questions data/eval/viquad/test.jsonl
+    time "${py[@]}" ragvi.retrieval "$corpus" "$retrieval" --run viquad_phase_a --chunking "$c" \
+      --methods dense --model intfloat/multilingual-e5-large --questions data/eval/viquad/test.jsonl
+    time "${py[@]}" ragvi.rerank "$retrieval/retrieval_viquad_phase_a.jsonl" data/eval/viquad/test.jsonl \
+      "$retrieval/chunks/viquad__${c}.jsonl" "$retrieval/retrieval_viquad_phase_a.jsonl" \
+      --method "bm25[${c}][word],dense[${c}],hybrid[${c}][word],dense[${c}][AITeamVN/Vietnamese_Embedding_v2],dense[${c}][intfloat/multilingual-e5-large]"
+    cp "$retrieval/retrieval_viquad_phase_a.jsonl" "$out/"
+  done
+
+  if [[ ! -f $retrieval/retrieval_zalo_phase_a.jsonl && -f $retrieval/retrieval_zalo_test.jsonl ]]; then
+    cp "$retrieval/retrieval_zalo_test.jsonl" "$retrieval/retrieval_zalo_phase_a.jsonl"
+  fi
+  for c in c1 c3 c4 c5 c5_nohead; do
+    echo "=== [Phase A] Zalo test chunking=$c (BM25[word], E3=bge-m3, Hybrid[word] + R1) ==="
+    time "${py[@]}" ragvi.retrieval data/processed/zalo_legal "$retrieval" --run zalo_phase_a --chunking "$c" \
+      --methods bm25,dense,hybrid --tokenizer word --questions data/eval/zalo/test.jsonl \
+      --removed data/eval/zalo/removed_doc_ids.json
+    time "${py[@]}" ragvi.rerank "$retrieval/retrieval_zalo_phase_a.jsonl" data/eval/zalo/test.jsonl \
+      "$retrieval/chunks/zalo_legal__${c}.jsonl" "$retrieval/retrieval_zalo_phase_a.jsonl" \
+      --method "bm25[${c}][word],dense[${c}],hybrid[${c}][word]"
+    rm -f "$retrieval/embeddings/zalo_legal__${c}__"*.npy
+    cp "$retrieval/retrieval_zalo_phase_a.jsonl" "$out/"
+  done
+  exit 0
 else
 # Pilot cố định: 5 câu có và 5 câu không có đáp án; oracle chỉ chạy nhóm có đáp án (D5).
 uv run --no-sync python - "$out" <<'PY'
