@@ -61,8 +61,8 @@ case "$mode" in
     fi ;;
   eda) files+=(notebooks/06_eda_du_lieu.ipynb) ;;
 esac
-# Chỉ tải lên đầu vào cần thiết; không gửi cả repo, cache hay thông tin đăng nhập.
-tar -czf "$tmp/project.tar.gz" --exclude='__pycache__' "${files[@]}"
+# Chỉ tải lên đầu vào cần thiết; chia gói > 15 MB thành các phần nhỏ để không vượt giới hạn PUT của Colab proxy.
+tar -czf "$tmp/project.tar.gz" --exclude='__pycache__' --exclude='zalo_legal__c3.jsonl' "${files[@]}"
 archive="$tmp/project.tar.gz"
 if command -v cygpath >/dev/null; then archive=$(cygpath -m "$archive"); fi
 
@@ -89,7 +89,16 @@ else
   allocated=1
 fi
 
-"${cli[@]}" upload -s "$session" "$archive" content/ragvi-project.tar.gz
+if [[ $(wc -c < "$tmp/project.tar.gz") -gt 15728640 ]]; then
+  split -b 15m "$tmp/project.tar.gz" "$tmp/ragvi-part."
+  for part in "$tmp"/ragvi-part.*; do
+    part_path=$part
+    if command -v cygpath >/dev/null; then part_path=$(cygpath -m "$part_path"); fi
+    "${cli[@]}" upload -s "$session" "$part_path" "content/${part##*/}"
+  done
+else
+  "${cli[@]}" upload -s "$session" "$archive" content/ragvi-project.tar.gz
+fi
 job_rc=0
 "${cli[@]}" exec -s "$session" --timeout 0 "${job_env[@]}" <<'PY' || job_rc=$?
 import os
@@ -101,6 +110,12 @@ import tarfile
 project = Path('/content/ragvi-project')
 out = Path('/content/ragvi-output')
 out.mkdir()
+parts = sorted(Path('/content').glob('ragvi-part.*'))
+if parts:
+    with open('/content/ragvi-project.tar.gz', 'wb') as dst:
+        for part in parts:
+            dst.write(part.read_bytes())
+            part.unlink()
 with tarfile.open('/content/ragvi-project.tar.gz') as bundle:
     bundle.extractall(project, filter='data')
 with subprocess.Popen(['bash', 'scripts/colab_job.sh', os.environ['RAGVI_JOB_MODE'], str(out)],

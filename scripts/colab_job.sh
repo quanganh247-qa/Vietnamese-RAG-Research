@@ -61,10 +61,6 @@ if [[ $mode == benchmark ]]; then
       cp "$retrieval/retrieval_$tag.jsonl" "$out/"
     done
   done
-  if [[ ! -f data/retrieval_cache/chunks/zalo_legal__c3.jsonl ]]; then
-    mkdir -p "$out/chunks"
-    cp "$retrieval/chunks/"*.jsonl "$out/chunks/" 2>/dev/null || true
-  fi
 else
 # Pilot cố định: 5 câu có và 5 câu không có đáp án; oracle chỉ chạy nhóm có đáp án (D5).
 uv run --no-sync python - "$out" <<'PY'
@@ -134,9 +130,9 @@ start_server() {
 }
 
 vram_mib=$(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits | head -n1 | tr -d ' ')
-slots=6
-if [[ "${vram_mib:-0}" -ge 20000 ]]; then slots=12; fi
-ctx=$((4096 * slots))
+slots=4
+if [[ "${vram_mib:-0}" -ge 20000 ]]; then slots=8; fi
+ctx=$((12288 * slots))
 start_server "$model_alias" "$model_gguf" "$ctx" "$slots" "$out/llama-server.log" \
   --jinja --chat-template-kwargs '{"enable_thinking":false}'
 model=(--llama-url "$base" --model "$model_alias" --workers "$slots")

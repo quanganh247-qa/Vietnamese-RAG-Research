@@ -120,7 +120,7 @@ def format_gold_evidence(question_row, corpus_text_of):
     return '\n\n'.join(parts)
 
 
-JUDGE_MAX_CHARS = 3000  # giới hạn mỗi phần ngữ cảnh/bằng chứng vàng (~750 token) để vừa VRAM T4 (15 GB)
+JUDGE_MAX_CHARS = 15000  # khớp trần 4.000 token của oracle (~15.000 ký tự) để không cắt mất khoản cuối của điều luật dài
 
 
 def _clip(text, max_chars=JUDGE_MAX_CHARS):

@@ -54,15 +54,15 @@ Dùng cùng `Kế hoạch chi tiết 30 ngày.md`. Mục tiêu từng ngày đư
 | [x] | Thứ Sáu 20/11 | Một lệnh chạy được từ câu hỏi đến câu trả lời cho cấu hình neo, closed-book và oracle; có ước lượng số giờ GPU cho Giai đoạn B | 21/11 | | Đã chạy trọn bộ `C3-E3-R0`, `closed_book`, `oracle` trên **cả dev và test** của ViQuAD và Zalo bằng `bash colab_run.sh benchmark` với `unsloth/Qwen3.5-9B-GGUF:Q4_K_M` qua `llama.cpp` continuous batching (`--parallel 8` trên L4, `--parallel 12` trên A100). Tốc độ sinh `C3-E3-R0`: `16,0–16,3 câu/phút` (ViQuAD), `10,5–13,9 câu/phút` (Zalo) → ước lượng Giai đoạn B (6.400 lượt): **~6,5–10,2 giờ GPU** (< 20 giờ → giữ nguyên 400 câu mỗi bộ) |
 | [ ] | Thứ Bảy 21/11 | Reranker R1 chạy được trên dev; 24 lượt nhúng cho Giai đoạn A đã khởi động (8 lượt `BAAI/bge-m3` xếp trước) và đang lưu đệm | | | Đã xác minh E2/E4 (`XLMRobertaTokenizer`, E2=8192, E4=512) và chạy xong R1 trên dev (Zalo dev Recall@5 tăng `0,6300 → 0,7800`, nDCG@5 `0,4712 → 0,6034`). Đã xong **6/8** lượt `BAAI/bge-m3` (ViQuAD c1/c3/c4, Zalo c1/c3/c4); còn `c5` và `c5_nohead` chuyển sang `05_tuan2_tiep_tuc.ipynb` với checkpoint mỗi 20.000 chunk + `bf16`/`fp16` |
 | [x] | Chủ nhật 22/11 | Judge trả về JSON hợp lệ trên 20 câu dev; chỉ số "nhầm điều luật" chạy được | 21/11 | | `unsloth/Qwen3.5-9B-GGUF:Q4_K_M` (tắt thinking, `--parallel 12`) chấm xong toàn bộ **2.211/2.211 câu trả lời có đáp án** trên cả `viquad_{dev,test}` và `zalo_{dev,test}` với **100% JSON hợp lệ (`n_judge_errors = 0`, `n_judge_missing = 0`)**. Chỉ số "nhầm điều luật" (`wrong_article`) chạy trên toàn bộ Zalo dev/test ([bảng tổng hợp](reports/benchmark-colab-2026-11-20.md)) |
-| [ ] | Thứ Hai 23/11 | Có 100 câu trả lời dev đã xáo trộn để gán nhãn; 50 câu đầu đã có nhãn người | | | |
-| [ ] | Thứ Ba 24/11 | 100 câu có đủ nhãn người; có Cohen's κ giữa judge và người cho H_gold, H_ctx và correctness | | | |
+| [x] | Thứ Hai 23/11 | Có 100 câu trả lời dev đã xáo trộn để gán nhãn; 50 câu đầu đã có nhãn người | 22/11 | | Đã sinh 2 phiếu gán nhãn ẩn danh (`seed=0`, mã hóa cấu hình bằng `blind_id`) gồm 50 mẫu ViQuAD dev (`reports/phieu/human_dev_viquad.md`) và 50 mẫu Zalo dev (`reports/phieu/human_dev_zalo.md`); 50 mẫu đầu (ViQuAD dev) đã chấm độc lập xong (`Correctness`: 39 mẫu `2`, 4 mẫu `1`, 7 mẫu `0`; `H_gold=1`: 9/50) |
+| [x] | Thứ Ba 24/11 | 100 câu có đủ nhãn người; có Cohen's κ giữa judge và người cho H_gold, H_ctx và correctness | 22/11 | | Đã chấm độc lập đủ 100/100 mẫu dev. Phát hiện `JUDGE_MAX_CHARS = 3000` cắt mất Khoản 3–10 của điều luật dài trên Zalo; sau khi nâng `JUDGE_MAX_CHARS = 15000` (khớp trần 4.000 token của `oracle`) và chấm lại các câu điều luật dài, **Cohen's κ trên 100 mẫu dev đạt: `κ(H_gold) = 0,8163`, `κ(correctness_linear) = 0,8519`, `κ(H_ctx) = 0,3871` (tỷ lệ đồng thuận tuyệt đối `H_ctx` đạt `72/76 = 94,74%`)**. Riêng ViQuAD dev (50 mẫu): `κ(H_gold) = 0,7216`, `κ(correctness) = 0,8623`; riêng Zalo dev (50 mẫu): `κ(H_gold) = 0,8764`, `κ(correctness) = 0,8324`, `κ(H_ctx) = 0,4776` |
 | [ ] | Thứ Tư 25/11 | Có quyết định tiếp tục hay chuyển phương án dự phòng; prompt, cấu hình và tập test đã đóng băng (thẻ `freeze-b`); người hướng dẫn đã nhận bản tóm tắt thiết kế | | | |
 
 **Cổng kiểm tra cuối giai đoạn:**
 
 - [x] Pipeline đầu-cuối chạy được trên dev của cả hai bộ
 - [ ] Tập test, prompt và danh sách cấu hình đã đóng băng
-- [ ] κ của H_gold từ 0,6 trở lên
+- [x] κ của H_gold từ 0,6 trở lên
 
 **Đánh giá giai đoạn:**
 
@@ -178,9 +178,9 @@ Ba việc tốn thời gian hơn dự kiến nhất (dùng để ước lượng
 ### 20–21/11 – Colab CLI, hoàn tất baseline `Qwen3.5-9B` với continuous batching và khám phá dữ liệu bổ sung
 
 - `colab_run.sh` điều phối G4 → A100 → L4 → T4. CLI đã xác thực và hoàn tất toàn bộ lượt `benchmark` trên L4 (23 GB) và A100 (40 GB) với **`unsloth/Qwen3.5-9B-GGUF:Q4_K_M`** (revision `1daf391c47cef14242f238b819fbe6fd500d624b`) qua `llama-server` (`--parallel 8/12 --cont-batching`, cổng `18080` để tránh trùng cổng `8080` nội bộ của Colab) và `ThreadPoolExecutor` trong `generate.py`/`judge.py`.
-- Kết quả đầy đủ 6 tập truy xuất (`C3–E3–R0`), 2.737 câu trả lời (`closed_book`, `oracle`, `C3-E3-R0` trên `viquad_{dev,test}` và `zalo_{dev,test}`) và 2.211 lượt chấm Judge sơ bộ (**0 lỗi JSON, 0 câu thiếu**) được ghi tại [bảng tổng hợp](reports/benchmark-colab-2026-11-20.md):
+- Kết quả đầy đủ 6 tập truy xuất (`C3–E3–R0`), 2.737 câu trả lời (`closed_book`, `oracle`, `C3-E3-R0` trên `viquad_{dev,test}` và `zalo_{dev,test}`) và 2.211 lượt chấm Judge đã hiệu chỉnh (`JUDGE_MAX_CHARS = 15000`, **0 lỗi JSON, 0 câu thiếu**, Cohen's $\kappa(H_{\text{gold}}) = 0,8163$ và $\kappa(\text{correctness}) = 0,8519$ trên 100 mẫu dev) được ghi tại [bảng tổng hợp](reports/benchmark-colab-2026-11-20.md):
   - `viquad_test` (400 câu): `C3-E3-R0` đạt `F1 = 0,3982`, `contains_gold = 52,14%`, `correctness = 1,5643/2`, `H_gold = 19,07%`, `H_ctx = 2,54%`, `RAH = +6,76%` so với `oracle` (`H_gold = 10,20%`, `F1 = 0,4326`).
-  - `zalo_test` (400 câu): `C3-E3-R0` đạt `correctness = 1,0679/2`, `false_refusal = 27,50%` (giảm từ `55,71%` ở `closed_book`), `H_gold = 34,48%`, `H_ctx = 10,34%`, `RAH = +6,35%` so với `oracle` (`H_gold = 31,67%`, `correctness = 1,1607/2`).
+  - `zalo_test` (400 câu): `C3-E3-R0` đạt `correctness = 1,1821/2`, `false_refusal = 27,50%` (giảm từ `55,71%` ở `closed_book`), `H_gold = 25,12%`, `H_ctx = 7,39%`, `RAH = +17,46%` so với `oracle` (`H_gold = 4,58%`, `correctness = 1,6214/2`).
 - Chạy `notebooks/06_eda_du_lieu.ipynb` trên bản dữ liệu thật đã tải về. BGE-M3 đếm 1.135.938 token trên 5.311 đoạn ViQuAD và 21.075.880 token trên 61.425 điều Zalo (tiêu đề + thân). Tỷ lệ dài hơn 512 token lần lượt 0,77% và 17,45%. Cụm gần câu chữ dev: ViQuAD 2/100 câu, Zalo 24/100 câu.
 - Bỏ file dự trữ riêng của Zalo khỏi dữ liệu local và trình sinh tập eval; dữ liệu thô, tập đánh giá dev/test và các đầu ra notebook lịch sử giữ nguyên.
 
