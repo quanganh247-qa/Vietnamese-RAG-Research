@@ -1,0 +1,372 @@
+{
+  "config": "C3-E3-R0",
+  "judge_calibrated": false,
+  "retrieval": {
+    "viquad": {
+      "train": {
+        "n": 28454,
+        "n_scored": 19238,
+        "r5": 0.8743632394219774,
+        "r20": 0.9490071733028381,
+        "mrr10": 0.7568071087810666,
+        "ndcg5": 0.7820322352201622
+      },
+      "validation": {
+        "n": 3814,
+        "n_scored": 2653,
+        "r5": 0.8703354692800603,
+        "r20": 0.944214097248398,
+        "mrr10": 0.7474646850824763,
+        "ndcg5": 0.7740655190124704
+      },
+      "test": {
+        "n": 7301,
+        "n_scored": 0,
+        "r5": null,
+        "r20": null,
+        "mrr10": null,
+        "ndcg5": null
+      },
+      "frozen_dev": {
+        "n": 100,
+        "n_scored": 77,
+        "r5": 0.8441558441558441,
+        "r20": 0.935064935064935,
+        "mrr10": 0.7379457843743558,
+        "ndcg5": 0.7587866715003175
+      },
+      "frozen_test": {
+        "n": 400,
+        "n_scored": 280,
+        "r5": 0.8892857142857142,
+        "r20": 0.9571428571428572,
+        "mrr10": 0.7609297052154195,
+        "ndcg5": 0.7893597307463733
+      }
+    },
+    "zalo": {
+      "release_test": {
+        "n": 788,
+        "n_scored": 788,
+        "r5": 0.8096446700507615,
+        "r20": 0.9263959390862944,
+        "mrr10": 0.6566508540810571,
+        "ndcg5": 0.6870493461697181
+      },
+      "frozen_dev": {
+        "n": 100,
+        "n_scored": 100,
+        "r5": 0.51,
+        "r20": 0.81,
+        "mrr10": 0.37397619047619046,
+        "ndcg5": 0.3882940159712957
+      },
+      "frozen_test": {
+        "n": 400,
+        "n_scored": 280,
+        "r5": 0.8142857142857143,
+        "r20": 0.9267857142857143,
+        "mrr10": 0.6229095804988661,
+        "ndcg5": 0.6642291269218098
+      }
+    }
+  },
+  "end_to_end": {
+    "viquad_dev": {
+      "configs": {
+        "closed_book": {
+          "n": 100,
+          "n_ans": 77,
+          "n_unans": 23,
+          "correct_refusal": 0.6521739130434783,
+          "fabrication": 0.34782608695652173,
+          "false_refusal": 0.7142857142857143,
+          "contains_gold": 0.025974025974025976,
+          "em": 0.0,
+          "f1": 0.05306247745073108,
+          "truncated_passages": 0,
+          "q_per_min": 53.997624104539405,
+          "p50_seconds": 0.713,
+          "n_judge_missing": 0,
+          "n_judge_errors": 0,
+          "correctness": 0.19480519480519481,
+          "n_correctness": 77,
+          "h_gold": 0.6818181818181818,
+          "n_h_gold": 22,
+          "h_ctx": null,
+          "n_h_ctx": 0
+        },
+        "oracle": {
+          "n": 77,
+          "n_ans": 77,
+          "n_unans": 0,
+          "correct_refusal": null,
+          "fabrication": null,
+          "false_refusal": 0.07792207792207792,
+          "contains_gold": 0.5974025974025974,
+          "em": 0.0,
+          "f1": 0.43106776993612367,
+          "truncated_passages": 0,
+          "q_per_min": 30.713796610845563,
+          "p50_seconds": 1.695,
+          "n_judge_missing": 0,
+          "n_judge_errors": 0,
+          "correctness": 1.7532467532467533,
+          "n_correctness": 77,
+          "h_gold": 0.14084507042253522,
+          "n_h_gold": 71,
+          "h_ctx": 0,
+          "n_h_ctx": 71
+        },
+        "C3-E3-R0": {
+          "n": 100,
+          "n_ans": 77,
+          "n_unans": 23,
+          "correct_refusal": 0.6086956521739131,
+          "fabrication": 0.391304347826087,
+          "false_refusal": 0.16883116883116883,
+          "contains_gold": 0.4935064935064935,
+          "em": 0.025974025974025976,
+          "f1": 0.40123232521452,
+          "truncated_passages": 0,
+          "q_per_min": 16.330307690214063,
+          "p50_seconds": 3.0955,
+          "n_judge_missing": 0,
+          "n_judge_errors": 0,
+          "correctness": 1.5194805194805194,
+          "n_correctness": 77,
+          "h_gold": 0.28125,
+          "n_h_gold": 64,
+          "h_ctx": 0.046875,
+          "n_h_ctx": 64
+        }
+      },
+      "rah_against_oracle": {
+        "n_pairs": 63,
+        "value": 0.1111111111111111
+      }
+    },
+    "viquad_test": {
+      "configs": {
+        "closed_book": {
+          "n": 400,
+          "n_ans": 280,
+          "n_unans": 120,
+          "correct_refusal": 0.8833333333333333,
+          "fabrication": 0.11666666666666667,
+          "false_refusal": 0.75,
+          "contains_gold": 0.039285714285714285,
+          "em": 0.0035714285714285713,
+          "f1": 0.06422005533637298,
+          "truncated_passages": 0,
+          "q_per_min": 55.505703211004935,
+          "p50_seconds": 0.695,
+          "n_judge_missing": 0,
+          "n_judge_errors": 0,
+          "correctness": 0.19642857142857142,
+          "n_correctness": 280,
+          "h_gold": 0.7714285714285715,
+          "n_h_gold": 70,
+          "h_ctx": null,
+          "n_h_ctx": 0
+        },
+        "oracle": {
+          "n": 280,
+          "n_ans": 280,
+          "n_unans": 0,
+          "correct_refusal": null,
+          "fabrication": null,
+          "false_refusal": 0.125,
+          "contains_gold": 0.5714285714285714,
+          "em": 0.007142857142857143,
+          "f1": 0.43256242308715287,
+          "truncated_passages": 0,
+          "q_per_min": 28.642498989840433,
+          "p50_seconds": 2.0015,
+          "n_judge_missing": 0,
+          "n_judge_errors": 0,
+          "correctness": 1.7,
+          "n_correctness": 280,
+          "h_gold": 0.10204081632653061,
+          "n_h_gold": 245,
+          "h_ctx": 0.012244897959183673,
+          "n_h_ctx": 245
+        },
+        "C3-E3-R0": {
+          "n": 400,
+          "n_ans": 280,
+          "n_unans": 120,
+          "correct_refusal": 0.6416666666666667,
+          "fabrication": 0.35833333333333334,
+          "false_refusal": 0.15714285714285714,
+          "contains_gold": 0.5214285714285715,
+          "em": 0.02857142857142857,
+          "f1": 0.3982031208184103,
+          "truncated_passages": 0,
+          "q_per_min": 16.0024323697202,
+          "p50_seconds": 3.217,
+          "n_judge_missing": 0,
+          "n_judge_errors": 0,
+          "correctness": 1.5642857142857143,
+          "n_correctness": 280,
+          "h_gold": 0.1906779661016949,
+          "n_h_gold": 236,
+          "h_ctx": 0.025423728813559324,
+          "n_h_ctx": 236
+        }
+      },
+      "rah_against_oracle": {
+        "n_pairs": 222,
+        "value": 0.06756756756756757
+      }
+    },
+    "zalo_dev": {
+      "configs": {
+        "closed_book": {
+          "n": 100,
+          "n_ans": 100,
+          "n_unans": 0,
+          "correct_refusal": null,
+          "fabrication": null,
+          "false_refusal": 0.53,
+          "contains_gold": null,
+          "em": null,
+          "f1": null,
+          "truncated_passages": 0,
+          "q_per_min": 35.82902389795894,
+          "p50_seconds": 1.1975,
+          "n_judge_missing": 0,
+          "n_judge_errors": 0,
+          "correctness": 0.18,
+          "n_correctness": 100,
+          "h_gold": 0.8936170212765957,
+          "n_h_gold": 47,
+          "h_ctx": null,
+          "n_h_ctx": 0
+        },
+        "oracle": {
+          "n": 100,
+          "n_ans": 100,
+          "n_unans": 0,
+          "correct_refusal": null,
+          "fabrication": null,
+          "false_refusal": 0.11,
+          "contains_gold": null,
+          "em": null,
+          "f1": null,
+          "truncated_passages": 0,
+          "q_per_min": 16.890037411432868,
+          "p50_seconds": 3.1189999999999998,
+          "n_judge_missing": 0,
+          "n_judge_errors": 0,
+          "correctness": 1.73,
+          "n_correctness": 100,
+          "h_gold": 0.02247191011235955,
+          "n_h_gold": 89,
+          "h_ctx": 0.011235955056179775,
+          "n_h_ctx": 89
+        },
+        "C3-E3-R0": {
+          "n": 100,
+          "n_ans": 100,
+          "n_unans": 0,
+          "correct_refusal": null,
+          "fabrication": null,
+          "false_refusal": 0.43,
+          "contains_gold": null,
+          "em": null,
+          "f1": null,
+          "truncated_passages": 0,
+          "q_per_min": 13.914689041486646,
+          "p50_seconds": 3.488,
+          "n_judge_missing": 0,
+          "n_judge_errors": 0,
+          "correctness": 0.79,
+          "n_correctness": 100,
+          "h_gold": 0.3157894736842105,
+          "n_h_gold": 57,
+          "h_ctx": 0.03508771929824561,
+          "n_h_ctx": 57
+        }
+      },
+      "rah_against_oracle": {
+        "n_pairs": 54,
+        "value": 0.3148148148148148
+      }
+    },
+    "zalo_test": {
+      "configs": {
+        "closed_book": {
+          "n": 400,
+          "n_ans": 280,
+          "n_unans": 120,
+          "correct_refusal": 0.575,
+          "fabrication": 0.425,
+          "false_refusal": 0.5571428571428572,
+          "contains_gold": null,
+          "em": null,
+          "f1": null,
+          "truncated_passages": 0,
+          "q_per_min": 38.81943624473714,
+          "p50_seconds": 0.7775000000000001,
+          "n_judge_missing": 0,
+          "n_judge_errors": 0,
+          "correctness": 0.14285714285714285,
+          "n_correctness": 280,
+          "h_gold": 0.9193548387096774,
+          "n_h_gold": 124,
+          "h_ctx": null,
+          "n_h_ctx": 0
+        },
+        "oracle": {
+          "n": 280,
+          "n_ans": 280,
+          "n_unans": 0,
+          "correct_refusal": null,
+          "fabrication": null,
+          "false_refusal": 0.14285714285714285,
+          "contains_gold": null,
+          "em": null,
+          "f1": null,
+          "truncated_passages": 83,
+          "q_per_min": 17.037330006997475,
+          "p50_seconds": 3.379,
+          "n_judge_missing": 0,
+          "n_judge_errors": 0,
+          "correctness": 1.6214285714285714,
+          "n_correctness": 280,
+          "h_gold": 0.04583333333333333,
+          "n_h_gold": 240,
+          "h_ctx": 0.04583333333333333,
+          "n_h_ctx": 240
+        },
+        "C3-E3-R0": {
+          "n": 400,
+          "n_ans": 280,
+          "n_unans": 120,
+          "correct_refusal": 0.5666666666666667,
+          "fabrication": 0.43333333333333335,
+          "false_refusal": 0.275,
+          "contains_gold": null,
+          "em": null,
+          "f1": null,
+          "truncated_passages": 0,
+          "q_per_min": 10.466655851122287,
+          "p50_seconds": 4.664,
+          "n_judge_missing": 0,
+          "n_judge_errors": 0,
+          "correctness": 1.1821428571428572,
+          "n_correctness": 280,
+          "h_gold": 0.2512315270935961,
+          "n_h_gold": 203,
+          "h_ctx": 0.07389162561576355,
+          "n_h_ctx": 203
+        }
+      },
+      "rah_against_oracle": {
+        "n_pairs": 189,
+        "value": 0.1746031746031746
+      }
+    }
+  }
+}
