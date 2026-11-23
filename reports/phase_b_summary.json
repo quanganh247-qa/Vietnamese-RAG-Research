@@ -23,7 +23,42 @@
           "h_gold": 0.7714285714285715,
           "n_h_gold": 70,
           "h_ctx": null,
-          "n_h_ctx": 0
+          "n_h_ctx": 0,
+          "p95_seconds": 3.644,
+          "ci95": {
+            "correct_refusal": [
+              0.8224,
+              0.9321
+            ],
+            "fabrication": [
+              0.0679,
+              0.1776
+            ],
+            "false_refusal": [
+              0.697,
+              0.8022
+            ],
+            "f1": [
+              0.049,
+              0.0802
+            ],
+            "em": [
+              0.0,
+              0.0119
+            ],
+            "contains_gold": [
+              0.0153,
+              0.0658
+            ],
+            "correctness": [
+              0.1423,
+              0.2526
+            ],
+            "h_gold": [
+              0.6752,
+              0.8621
+            ]
+          }
         },
         "oracle": {
           "n": 280,
@@ -45,7 +80,38 @@
           "h_gold": 0.10204081632653061,
           "n_h_gold": 245,
           "h_ctx": 0.012244897959183673,
-          "n_h_ctx": 245
+          "n_h_ctx": 245,
+          "p95_seconds": 3.818,
+          "ci95": {
+            "false_refusal": [
+              0.0813,
+              0.1677
+            ],
+            "f1": [
+              0.3941,
+              0.4693
+            ],
+            "em": [
+              0.0,
+              0.0181
+            ],
+            "contains_gold": [
+              0.5125,
+              0.6353
+            ],
+            "correctness": [
+              1.6109,
+              1.79
+            ],
+            "h_gold": [
+              0.0685,
+              0.1374
+            ],
+            "h_ctx": [
+              0.0,
+              0.0253
+            ]
+          }
         },
         "C3-E3-R0": {
           "n": 400,
@@ -70,7 +136,51 @@
           "n_h_ctx": 236,
           "rah_against_oracle": {
             "n_pairs": 222,
-            "value": 0.06756756756756757
+            "value": 0.06756756756756757,
+            "ci95": [
+              0.0276,
+              0.109
+            ],
+            "share_of_h_gold": 0.3544
+          },
+          "p95_seconds": 7.845,
+          "ci95": {
+            "correct_refusal": [
+              0.5347,
+              0.7273
+            ],
+            "fabrication": [
+              0.2727,
+              0.4653
+            ],
+            "false_refusal": [
+              0.1098,
+              0.2069
+            ],
+            "f1": [
+              0.3511,
+              0.443
+            ],
+            "em": [
+              0.012,
+              0.0482
+            ],
+            "contains_gold": [
+              0.4607,
+              0.588
+            ],
+            "correctness": [
+              1.4437,
+              1.6808
+            ],
+            "h_gold": [
+              0.1448,
+              0.2391
+            ],
+            "h_ctx": [
+              0.0082,
+              0.0451
+            ]
           }
         },
         "C1-E3-R0": {
@@ -96,7 +206,51 @@
           "n_h_ctx": 230,
           "rah_against_oracle": {
             "n_pairs": 220,
-            "value": 0.06818181818181818
+            "value": 0.06818181818181818,
+            "ci95": [
+              0.0279,
+              0.1122
+            ],
+            "share_of_h_gold": 0.3647
+          },
+          "p95_seconds": 14.47,
+          "ci95": {
+            "correct_refusal": [
+              0.5333,
+              0.7572
+            ],
+            "fabrication": [
+              0.2428,
+              0.4667
+            ],
+            "false_refusal": [
+              0.1229,
+              0.2324
+            ],
+            "f1": [
+              0.3383,
+              0.4327
+            ],
+            "em": [
+              0.0072,
+              0.0368
+            ],
+            "contains_gold": [
+              0.45,
+              0.5802
+            ],
+            "correctness": [
+              1.395,
+              1.6506
+            ],
+            "h_gold": [
+              0.1364,
+              0.2418
+            ],
+            "h_ctx": [
+              0.0,
+              0.0146
+            ]
           }
         },
         "C3-E0-R0": {
@@ -122,7 +276,51 @@
           "n_h_ctx": 207,
           "rah_against_oracle": {
             "n_pairs": 200,
-            "value": 0.055
+            "value": 0.055,
+            "ci95": [
+              0.0056,
+              0.1042
+            ],
+            "share_of_h_gold": 0.3253
+          },
+          "p95_seconds": 14.439,
+          "ci95": {
+            "correct_refusal": [
+              0.566,
+              0.7761
+            ],
+            "fabrication": [
+              0.2239,
+              0.434
+            ],
+            "false_refusal": [
+              0.1966,
+              0.3244
+            ],
+            "f1": [
+              0.3057,
+              0.3924
+            ],
+            "em": [
+              0.0072,
+              0.0387
+            ],
+            "contains_gold": [
+              0.3979,
+              0.5372
+            ],
+            "correctness": [
+              1.2296,
+              1.4983
+            ],
+            "h_gold": [
+              0.1131,
+              0.227
+            ],
+            "h_ctx": [
+              0.0,
+              0.0156
+            ]
           }
         },
         "C3-E5-R0": {
@@ -148,7 +346,51 @@
           "n_h_ctx": 243,
           "rah_against_oracle": {
             "n_pairs": 230,
-            "value": 0.09565217391304348
+            "value": 0.09565217391304348,
+            "ci95": [
+              0.0504,
+              0.141
+            ],
+            "share_of_h_gold": 0.4649
+          },
+          "p95_seconds": 15.335,
+          "ci95": {
+            "correct_refusal": [
+              0.5504,
+              0.7485
+            ],
+            "fabrication": [
+              0.2515,
+              0.4496
+            ],
+            "false_refusal": [
+              0.0836,
+              0.1815
+            ],
+            "f1": [
+              0.362,
+              0.4517
+            ],
+            "em": [
+              0.0115,
+              0.0464
+            ],
+            "contains_gold": [
+              0.4746,
+              0.6056
+            ],
+            "correctness": [
+              1.4679,
+              1.7044
+            ],
+            "h_gold": [
+              0.15,
+              0.2577
+            ],
+            "h_ctx": [
+              0.0,
+              0.0196
+            ]
           }
         },
         "C3-E3-R1": {
@@ -174,13 +416,167 @@
           "n_h_ctx": 246,
           "rah_against_oracle": {
             "n_pairs": 234,
-            "value": 0.0811965811965812
+            "value": 0.0811965811965812,
+            "ci95": [
+              0.041,
+              0.1278
+            ],
+            "share_of_h_gold": 0.4076
+          },
+          "p95_seconds": 15.901,
+          "ci95": {
+            "correct_refusal": [
+              0.5888,
+              0.7836
+            ],
+            "fabrication": [
+              0.2164,
+              0.4112
+            ],
+            "false_refusal": [
+              0.0803,
+              0.164
+            ],
+            "f1": [
+              0.3663,
+              0.4481
+            ],
+            "em": [
+              0.004,
+              0.0428
+            ],
+            "contains_gold": [
+              0.4881,
+              0.6196
+            ],
+            "correctness": [
+              1.5115,
+              1.7341
+            ],
+            "h_gold": [
+              0.1566,
+              0.25
+            ],
+            "h_ctx": [
+              0.0,
+              0.0264
+            ]
           }
         }
       },
       "rah_against_oracle": {
         "n_pairs": 222,
         "value": 0.06756756756756757
+      },
+      "hypothesis_tests_holm": {
+        "correctness": [
+          {
+            "comparison": "C1-E3-R0 vs C3-E3-R0",
+            "n_pairs": 280,
+            "mean_a": 1.5179,
+            "mean_b": 1.5643,
+            "diff": -0.0464,
+            "diff_ci95": [
+              -0.104,
+              0.0068
+            ],
+            "p_raw": 0.1201,
+            "p_holm": 0.3603
+          },
+          {
+            "comparison": "C3-E0-R0 vs C3-E3-R0",
+            "n_pairs": 280,
+            "mean_a": 1.3643,
+            "mean_b": 1.5643,
+            "diff": -0.2,
+            "diff_ci95": [
+              -0.3064,
+              -0.1029
+            ],
+            "p_raw": 0.0002,
+            "p_holm": 0.0008
+          },
+          {
+            "comparison": "C3-E5-R0 vs C3-E3-R0",
+            "n_pairs": 280,
+            "mean_a": 1.5893,
+            "mean_b": 1.5643,
+            "diff": 0.025,
+            "diff_ci95": [
+              -0.041,
+              0.0889
+            ],
+            "p_raw": 0.5511,
+            "p_holm": 0.5511
+          },
+          {
+            "comparison": "C3-E3-R1 vs C3-E3-R0",
+            "n_pairs": 280,
+            "mean_a": 1.625,
+            "mean_b": 1.5643,
+            "diff": 0.0607,
+            "diff_ci95": [
+              -0.0099,
+              0.1274
+            ],
+            "p_raw": 0.1247,
+            "p_holm": 0.3603
+          }
+        ],
+        "h_gold": [
+          {
+            "comparison": "C1-E3-R0 vs C3-E3-R0",
+            "n_pairs": 225,
+            "mean_a": 0.1867,
+            "mean_b": 0.1911,
+            "diff": -0.0044,
+            "diff_ci95": [
+              -0.0354,
+              0.0254
+            ],
+            "p_raw": 1.0,
+            "p_holm": 1.0
+          },
+          {
+            "comparison": "C3-E0-R0 vs C3-E3-R0",
+            "n_pairs": 196,
+            "mean_a": 0.1735,
+            "mean_b": 0.1786,
+            "diff": -0.0051,
+            "diff_ci95": [
+              -0.0441,
+              0.0369
+            ],
+            "p_raw": 1.0,
+            "p_holm": 1.0
+          },
+          {
+            "comparison": "C3-E5-R0 vs C3-E3-R0",
+            "n_pairs": 228,
+            "mean_a": 0.2105,
+            "mean_b": 0.1886,
+            "diff": 0.0219,
+            "diff_ci95": [
+              -0.0119,
+              0.0578
+            ],
+            "p_raw": 0.3597,
+            "p_holm": 1.0
+          },
+          {
+            "comparison": "C3-E3-R1 vs C3-E3-R0",
+            "n_pairs": 229,
+            "mean_a": 0.2096,
+            "mean_b": 0.1965,
+            "diff": 0.0131,
+            "diff_ci95": [
+              -0.0213,
+              0.0481
+            ],
+            "p_raw": 0.6201,
+            "p_holm": 1.0
+          }
+        ]
       }
     },
     "zalo_test": {
@@ -207,7 +603,34 @@
           "h_ctx": null,
           "n_h_ctx": 0,
           "wrong_article": 0.27419354838709675,
-          "n_wrong_article": 124
+          "n_wrong_article": 124,
+          "p95_seconds": 4.178,
+          "ci95": {
+            "correct_refusal": [
+              0.4824,
+              0.664
+            ],
+            "fabrication": [
+              0.336,
+              0.5176
+            ],
+            "false_refusal": [
+              0.4965,
+              0.646
+            ],
+            "correctness": [
+              0.0741,
+              0.1919
+            ],
+            "h_gold": [
+              0.8625,
+              0.96
+            ],
+            "wrong_article": [
+              0.1348,
+              0.3567
+            ]
+          }
         },
         "oracle": {
           "n": 280,
@@ -231,7 +654,30 @@
           "h_ctx": 0.04583333333333333,
           "n_h_ctx": 240,
           "wrong_article": 0.029166666666666667,
-          "n_wrong_article": 240
+          "n_wrong_article": 240,
+          "p95_seconds": 7.296,
+          "ci95": {
+            "false_refusal": [
+              0.1042,
+              0.2067
+            ],
+            "correctness": [
+              1.5196,
+              1.7107
+            ],
+            "h_gold": [
+              0.0127,
+              0.0658
+            ],
+            "h_ctx": [
+              0.0127,
+              0.0658
+            ],
+            "wrong_article": [
+              0.009,
+              0.0663
+            ]
+          }
         },
         "C3-E3-R0": {
           "n": 400,
@@ -258,7 +704,43 @@
           "n_wrong_article": 203,
           "rah_against_oracle": {
             "n_pairs": 189,
-            "value": 0.1746031746031746
+            "value": 0.1746031746031746,
+            "ci95": [
+              0.0725,
+              0.2518
+            ],
+            "share_of_h_gold": 0.695
+          },
+          "p95_seconds": 15.666,
+          "ci95": {
+            "correct_refusal": [
+              0.4561,
+              0.6721
+            ],
+            "fabrication": [
+              0.3279,
+              0.5439
+            ],
+            "false_refusal": [
+              0.1602,
+              0.3545
+            ],
+            "correctness": [
+              0.9542,
+              1.5055
+            ],
+            "h_gold": [
+              0.1489,
+              0.3231
+            ],
+            "h_ctx": [
+              0.0384,
+              0.109
+            ],
+            "wrong_article": [
+              0.0123,
+              0.0606
+            ]
           }
         },
         "C4-E3-R0": {
@@ -286,7 +768,43 @@
           "n_wrong_article": 199,
           "rah_against_oracle": {
             "n_pairs": 187,
-            "value": 0.17647058823529413
+            "value": 0.17647058823529413,
+            "ci95": [
+              0.088,
+              0.2481
+            ],
+            "share_of_h_gold": 0.7167
+          },
+          "p95_seconds": 36.994,
+          "ci95": {
+            "correct_refusal": [
+              0.4463,
+              0.648
+            ],
+            "fabrication": [
+              0.352,
+              0.5537
+            ],
+            "false_refusal": [
+              0.1038,
+              0.4514
+            ],
+            "correctness": [
+              0.8062,
+              1.6191
+            ],
+            "h_gold": [
+              0.1481,
+              0.3348
+            ],
+            "h_ctx": [
+              0.0221,
+              0.1336
+            ],
+            "wrong_article": [
+              0.0312,
+              0.1257
+            ]
           }
         },
         "C5-E3-R0": {
@@ -314,7 +832,43 @@
           "n_wrong_article": 222,
           "rah_against_oracle": {
             "n_pairs": 206,
-            "value": 0.22330097087378642
+            "value": 0.22330097087378642,
+            "ci95": [
+              0.1045,
+              0.3108
+            ],
+            "share_of_h_gold": 0.7746
+          },
+          "p95_seconds": 16.257,
+          "ci95": {
+            "correct_refusal": [
+              0.4859,
+              0.6804
+            ],
+            "fabrication": [
+              0.3196,
+              0.5141
+            ],
+            "false_refusal": [
+              0.1133,
+              0.2741
+            ],
+            "correctness": [
+              1.0018,
+              1.5761
+            ],
+            "h_gold": [
+              0.1693,
+              0.3826
+            ],
+            "h_ctx": [
+              0.0189,
+              0.1687
+            ],
+            "wrong_article": [
+              0.0279,
+              0.0904
+            ]
           }
         },
         "C5_nohead-E3-R0": {
@@ -342,7 +896,43 @@
           "n_wrong_article": 181,
           "rah_against_oracle": {
             "n_pairs": 173,
-            "value": 0.2658959537572254
+            "value": 0.2658959537572254,
+            "ci95": [
+              0.1407,
+              0.3624
+            ],
+            "share_of_h_gold": 0.8298
+          },
+          "p95_seconds": 14.227,
+          "ci95": {
+            "correct_refusal": [
+              0.5175,
+              0.696
+            ],
+            "fabrication": [
+              0.304,
+              0.4825
+            ],
+            "false_refusal": [
+              0.2383,
+              0.4308
+            ],
+            "correctness": [
+              0.6957,
+              1.2967
+            ],
+            "h_gold": [
+              0.1897,
+              0.4206
+            ],
+            "h_ctx": [
+              0.0,
+              0.059
+            ],
+            "wrong_article": [
+              0.0044,
+              0.0522
+            ]
           }
         },
         "C3-E0-R0": {
@@ -370,7 +960,43 @@
           "n_wrong_article": 194,
           "rah_against_oracle": {
             "n_pairs": 187,
-            "value": 0.2192513368983957
+            "value": 0.2192513368983957,
+            "ci95": [
+              0.0888,
+              0.2959
+            ],
+            "share_of_h_gold": 0.7734
+          },
+          "p95_seconds": 19.588,
+          "ci95": {
+            "correct_refusal": [
+              0.5546,
+              0.7537
+            ],
+            "fabrication": [
+              0.2463,
+              0.4454
+            ],
+            "false_refusal": [
+              0.2482,
+              0.3616
+            ],
+            "correctness": [
+              0.9381,
+              1.3034
+            ],
+            "h_gold": [
+              0.1621,
+              0.3605
+            ],
+            "h_ctx": [
+              0.0298,
+              0.1071
+            ],
+            "wrong_article": [
+              0.0054,
+              0.042
+            ]
           }
         },
         "C3-E5-R0": {
@@ -398,7 +1024,43 @@
           "n_wrong_article": 211,
           "rah_against_oracle": {
             "n_pairs": 202,
-            "value": 0.20297029702970298
+            "value": 0.20297029702970298,
+            "ci95": [
+              0.1,
+              0.2782
+            ],
+            "share_of_h_gold": 0.7931
+          },
+          "p95_seconds": 20.131,
+          "ci95": {
+            "correct_refusal": [
+              0.4435,
+              0.6511
+            ],
+            "fabrication": [
+              0.3489,
+              0.5565
+            ],
+            "false_refusal": [
+              0.1507,
+              0.3088
+            ],
+            "correctness": [
+              1.0238,
+              1.4865
+            ],
+            "h_gold": [
+              0.1585,
+              0.3245
+            ],
+            "h_ctx": [
+              0.0205,
+              0.0906
+            ],
+            "wrong_article": [
+              0.0139,
+              0.0675
+            ]
           }
         },
         "C3-E3-R1": {
@@ -426,13 +1088,237 @@
           "n_wrong_article": 218,
           "rah_against_oracle": {
             "n_pairs": 205,
-            "value": 0.1951219512195122
+            "value": 0.1951219512195122,
+            "ci95": [
+              0.0878,
+              0.2656
+            ],
+            "share_of_h_gold": 0.7596
+          },
+          "p95_seconds": 19.562,
+          "ci95": {
+            "correct_refusal": [
+              0.4407,
+              0.6581
+            ],
+            "fabrication": [
+              0.3419,
+              0.5593
+            ],
+            "false_refusal": [
+              0.117,
+              0.2931
+            ],
+            "correctness": [
+              1.0498,
+              1.5746
+            ],
+            "h_gold": [
+              0.1468,
+              0.3378
+            ],
+            "h_ctx": [
+              0.0181,
+              0.0943
+            ],
+            "wrong_article": [
+              0.0136,
+              0.0714
+            ]
           }
         }
       },
       "rah_against_oracle": {
         "n_pairs": 189,
         "value": 0.1746031746031746
+      },
+      "hypothesis_tests_holm": {
+        "correctness": [
+          {
+            "comparison": "C4-E3-R0 vs C3-E3-R0",
+            "n_pairs": 280,
+            "mean_a": 1.175,
+            "mean_b": 1.1821,
+            "diff": -0.0071,
+            "diff_ci95": [
+              -0.1544,
+              0.2062
+            ],
+            "p_raw": 0.9509,
+            "p_holm": 1.0
+          },
+          {
+            "comparison": "C5-E3-R0 vs C3-E3-R0",
+            "n_pairs": 280,
+            "mean_a": 1.2607,
+            "mean_b": 1.1821,
+            "diff": 0.0786,
+            "diff_ci95": [
+              -0.0109,
+              0.1795
+            ],
+            "p_raw": 0.176,
+            "p_holm": 0.5279
+          },
+          {
+            "comparison": "C5_nohead-E3-R0 vs C3-E3-R0",
+            "n_pairs": 280,
+            "mean_a": 0.95,
+            "mean_b": 1.1821,
+            "diff": -0.2321,
+            "diff_ci95": [
+              -0.3187,
+              -0.12
+            ],
+            "p_raw": 0.0001,
+            "p_holm": 0.0007
+          },
+          {
+            "comparison": "C3-E0-R0 vs C3-E3-R0",
+            "n_pairs": 280,
+            "mean_a": 1.0786,
+            "mean_b": 1.1821,
+            "diff": -0.1036,
+            "diff_ci95": [
+              -0.3,
+              0.018
+            ],
+            "p_raw": 0.083,
+            "p_holm": 0.415
+          },
+          {
+            "comparison": "C3-E5-R0 vs C3-E3-R0",
+            "n_pairs": 280,
+            "mean_a": 1.2179,
+            "mean_b": 1.1821,
+            "diff": 0.0357,
+            "diff_ci95": [
+              -0.0749,
+              0.1003
+            ],
+            "p_raw": 0.5098,
+            "p_holm": 1.0
+          },
+          {
+            "comparison": "C3-E3-R1 vs C3-E3-R0",
+            "n_pairs": 280,
+            "mean_a": 1.2607,
+            "mean_b": 1.1821,
+            "diff": 0.0786,
+            "diff_ci95": [
+              -0.0138,
+              0.1387
+            ],
+            "p_raw": 0.1124,
+            "p_holm": 0.4496
+          },
+          {
+            "comparison": "C5-E3-R0 vs C5_nohead-E3-R0",
+            "n_pairs": 280,
+            "mean_a": 1.2607,
+            "mean_b": 0.95,
+            "diff": 0.3107,
+            "diff_ci95": [
+              0.2161,
+              0.4051
+            ],
+            "p_raw": 0.0001,
+            "p_holm": 0.0007
+          }
+        ],
+        "h_gold": [
+          {
+            "comparison": "C4-E3-R0 vs C3-E3-R0",
+            "n_pairs": 172,
+            "mean_a": 0.2384,
+            "mean_b": 0.2267,
+            "diff": 0.0116,
+            "diff_ci95": [
+              -0.0422,
+              0.0611
+            ],
+            "p_raw": 0.8473,
+            "p_holm": 1.0
+          },
+          {
+            "comparison": "C5-E3-R0 vs C3-E3-R0",
+            "n_pairs": 185,
+            "mean_a": 0.2649,
+            "mean_b": 0.2432,
+            "diff": 0.0216,
+            "diff_ci95": [
+              -0.0291,
+              0.0682
+            ],
+            "p_raw": 0.6111,
+            "p_holm": 1.0
+          },
+          {
+            "comparison": "C5_nohead-E3-R0 vs C3-E3-R0",
+            "n_pairs": 163,
+            "mean_a": 0.3067,
+            "mean_b": 0.2454,
+            "diff": 0.0613,
+            "diff_ci95": [
+              0.0177,
+              0.1235
+            ],
+            "p_raw": 0.112,
+            "p_holm": 0.7839
+          },
+          {
+            "comparison": "C3-E0-R0 vs C3-E3-R0",
+            "n_pairs": 171,
+            "mean_a": 0.2456,
+            "mean_b": 0.2632,
+            "diff": -0.0175,
+            "diff_ci95": [
+              -0.082,
+              0.0769
+            ],
+            "p_raw": 0.7651,
+            "p_holm": 1.0
+          },
+          {
+            "comparison": "C3-E5-R0 vs C3-E3-R0",
+            "n_pairs": 189,
+            "mean_a": 0.2434,
+            "mean_b": 0.2434,
+            "diff": 0.0,
+            "diff_ci95": [
+              -0.0438,
+              0.0629
+            ],
+            "p_raw": 1.0,
+            "p_holm": 1.0
+          },
+          {
+            "comparison": "C3-E3-R1 vs C3-E3-R0",
+            "n_pairs": 194,
+            "mean_a": 0.2474,
+            "mean_b": 0.2423,
+            "diff": 0.0052,
+            "diff_ci95": [
+              -0.0415,
+              0.0464
+            ],
+            "p_raw": 1.0,
+            "p_holm": 1.0
+          },
+          {
+            "comparison": "C5-E3-R0 vs C5_nohead-E3-R0",
+            "n_pairs": 178,
+            "mean_a": 0.2584,
+            "mean_b": 0.3146,
+            "diff": -0.0562,
+            "diff_ci95": [
+              -0.1045,
+              0.0
+            ],
+            "p_raw": 0.1486,
+            "p_holm": 0.8915
+          }
+        ]
       }
     }
   }

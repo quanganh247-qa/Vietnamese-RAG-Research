@@ -244,3 +244,16 @@ def test_embed_checkpoint_resume_and_oom_backoff(tmp_path):
     # Block 0..2 giữ nguyên giá trị từ lần chạy đầu (32.0), không bị nhúng lại
     assert np.all(vecs[:2] == 32.0)
     assert any(bs == 16 for _, bs in calls)
+
+
+def test_cluster_bootstrap_and_paired_perm_and_holm():
+    from ragvi.metrics import cluster_bootstrap_ci, holm_adjust, paired_perm
+
+    lo, hi = cluster_bootstrap_ci([0.0, 0.0, 1.0, 1.0], clusters=['a', 'a', 'b', 'b'], n_boot=500, seed=0)
+    assert 0.0 <= lo <= 0.5 <= hi <= 1.0
+    p_diff = paired_perm([1.0] * 30, [0.0] * 30, n=2000, seed=0)
+    assert p_diff < 0.01
+    p_same = paired_perm([1.0, 0.0] * 10, [1.0, 0.0] * 10, n=1000, seed=0)
+    assert p_same == 1.0
+    adj = holm_adjust([0.001, 0.02, 0.5])
+    assert adj == [0.003, 0.04, 0.5]

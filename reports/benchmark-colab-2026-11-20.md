@@ -212,4 +212,92 @@ Chạy trên Colab (`results/colab/phase_b-nn3pnCsI/` trên `NVIDIA A100-SXM4-40
 4. **So sánh ảo giác quy cho truy xuất (`RAH`) giữa hai miền (`RQ4 / H4`):**
    - Trên toàn bộ các cấu hình RAG, `RAH` trên miền pháp luật Zalo (`+17,46%` đến `+26,59%`) luôn cao gấp **2,2× – 3,9×** so với miền bách khoa ViQuAD (`+5,50%` đến `+9,57%`), chứng minh rằng trong miền pháp luật, truy xuất thiếu hoặc sai điều khoản là nguồn gây ảo giác chủ đạo của hệ thống RAG.
 
+---
+
+## 5. Kiểm định giả thuyết ghép cặp kèm hiệu chỉnh Holm & Khoảng tin cậy Bootstrap 95% (`reports/phase_a_summary.json`, `reports/phase_b_summary.json`)
+
+Theo kế hoạch thống kê đã đăng ký trước (D1, Ngày 15 & Ngày 22):
+- **Khoảng tin cậy 95%:** Cluster bootstrap `1.000` lần (`seed = 0`), lấy mẫu lại theo cụm `title` trên ViQuAD (`118` cụm bài viết ở tập test) và theo nhóm điều luật vàng liên thông trên Zalo (`235` cụm ở tập test).
+- **Kiểm định giả thuyết chính:** Kiểm định hoán vị ghép cặp hai phía (`10.000` hoán vị, `seed = 0`) trên hai chỉ số chính (`Correctness` và `H_gold`), hiệu chỉnh **Holm–Bonferroni** cho **7 phép so sánh trên Zalo** và **4 phép so sánh trên ViQuAD**.
+
+### 5.1. Họ 7 phép so sánh đã đăng ký trước trên `zalo_test` (Hiệu chỉnh Holm)
+
+| Phép so sánh (`A vs B`) | Chỉ số | `n_pairs` | Trung bình `A` | Trung bình `B` | Hiệu số `A − B` (95% Cluster CI) | $p_{\text{raw}}$ | $p_{\text{Holm}}$ | Kết luận thống kê ($\alpha = 0,05$) |
+|---|---|---:|---:|---:|---:|---:|---:|---|
+| `C4-E3-R0 vs C3-E3-R0` | `Correctness` | 280 | 1,1750 | 1,1821 | `-0,0071 [-0,1544, +0,2062]` | 0,9509 | 1,0000 | Không phát hiện khác biệt |
+| `C5-E3-R0 vs C3-E3-R0` | `Correctness` | 280 | 1,2607 | 1,1821 | `+0,0786 [-0,0109, +0,1795]` | 0,1760 | 0,5279 | Xu hướng tăng (+0,0786), chưa vượt ngưỡng sau Holm |
+| **`C5_nohead-E3-R0 vs C3-E3-R0`** | `Correctness` | 280 | 0,9500 | 1,1821 | **`-0,2321 [-0,3187, -0,1200]`** | **0,0001** | **0,0007** | **Có ý nghĩa thống kê ($p_{\text{Holm}} < 0,001$): bỏ tiêu đề làm tụt mạnh độ đúng** |
+| `C3-E0-R0 vs C3-E3-R0` | `Correctness` | 280 | 1,0786 | 1,1821 | `-0,1036 [-0,3000, +0,0180]` | 0,0830 | 0,4150 | Không phát hiện khác biệt sau Holm |
+| `C3-E5-R0 vs C3-E3-R0` | `Correctness` | 280 | 1,2179 | 1,1821 | `+0,0357 [-0,0749, +0,1003]` | 0,5098 | 1,0000 | Không phát hiện khác biệt |
+| `C3-E3-R1 vs C3-E3-R0` | `Correctness` | 280 | 1,2607 | 1,1821 | `+0,0786 [-0,0138, +0,1387]` | 0,1124 | 0,4496 | Xu hướng tăng (+0,0786), chưa vượt ngưỡng sau Holm |
+| **`C5-E3-R0 vs C5_nohead-E3-R0` (H1b)** | `Correctness` | 280 | **1,2607** | **0,9500** | **`+0,3107 [+0,2161, +0,4051]`** | **0,0001** | **0,0007** | **Có ý nghĩa thống kê ($p_{\text{Holm}} < 0,001$): tiêu đề cha tăng +0,3107 điểm độ đúng** |
+| `C4-E3-R0 vs C3-E3-R0` | $H_{\text{gold}}$ | 172 | 25,00% | 23,84% | `+1,16% [-4,22%, +6,11%]` | 0,8473 | 1,0000 | Không phát hiện khác biệt |
+| `C5-E3-R0 vs C3-E3-R0` | $H_{\text{gold}}$ | 185 | 25,95% | 23,78% | `+2,16% [-2,91%, +6,82%]` | 0,6111 | 1,0000 | Không phát hiện khác biệt |
+| `C5_nohead-E3-R0 vs C3-E3-R0` | $H_{\text{gold}}$ | 163 | 31,29% | 25,15% | `+6,13% [+1,77%, +12,35%]` | 0,1120 | 0,7839 | CI 95% theo cụm dương (+1,77% đến +12,35%) |
+| `C3-E0-R0 vs C3-E3-R0` | $H_{\text{gold}}$ | 171 | 23,39% | 25,15% | `-1,75% [-8,20%, +7,69%]` | 0,7651 | 1,0000 | Không phát hiện khác biệt |
+| `C3-E5-R0 vs C3-E3-R0` | $H_{\text{gold}}$ | 189 | 23,81% | 23,81% | `+0,00% [-4,38%, +6,29%]` | 1,0000 | 1,0000 | Không phát hiện khác biệt |
+| `C3-E3-R1 vs C3-E3-R0` | $H_{\text{gold}}$ | 194 | 24,23% | 23,71% | `+0,52% [-4,15%, +4,64%]` | 1,0000 | 1,0000 | Không phát hiện khác biệt |
+| `C5-E3-R0 vs C5_nohead-E3-R0` (H1b) | $H_{\text{gold}}$ | 178 | 26,40% | 32,02% | `-5,62% [-10,45%, +0,00%]` | 0,1486 | 0,8915 | Giảm -5,62 điểm % ảo giác trên tập câu trả lời chung |
+
+*(Ở tầng truy xuất Giai đoạn A trên `zalo_test`, phép so sánh ghép cặp `C5` vs `C3`, `C4`, `C5_nohead` đều đạt ý nghĩa thống kê rất cao $p = 0,0001$ trên `nDCG@5`: `dense[c5] − dense[c3] = +0,1052 [+0,0340, +0,1534]`; `dense[c5] − dense[c4] = +0,0949 [+0,0344, +0,1328]`; `dense[c5] − dense[c5_nohead] = +0,1397 [+0,0602, +0,1934]`; `hybrid[c5][word]+r1 − hybrid[c5_nohead][word]+r1 = +0,1740 [+0,0732, +0,2581]`.)*
+
+### 5.2. Họ 4 phép so sánh đã đăng ký trước trên `viquad_test` (Hiệu chỉnh Holm)
+
+| Phép so sánh (`A vs B`) | Chỉ số | `n_pairs` | Trung bình `A` | Trung bình `B` | Hiệu số `A − B` (95% Cluster CI) | $p_{\text{raw}}$ | $p_{\text{Holm}}$ | Kết luận thống kê ($\alpha = 0,05$) |
+|---|---|---:|---:|---:|---:|---:|---:|---|
+| `C1-E3-R0 vs C3-E3-R0` | `Correctness` | 280 | 1,5179 | 1,5643 | `-0,0464 [-0,1040, +0,0068]` | 0,1201 | 0,3603 | Không phát hiện khác biệt |
+| **`C3-E0-R0 vs C3-E3-R0`** | `Correctness` | 280 | **1,3643** | **1,5643** | **`-0,2000 [-0,3064, -0,1029]`** | **0,0002** | **0,0008** | **Có ý nghĩa thống kê ($p_{\text{Holm}} < 0,001$): Dense vượt xa BM25 tách từ** |
+| `C3-E5-R0 vs C3-E3-R0` | `Correctness` | 280 | 1,5893 | 1,5643 | `+0,0250 [-0,0410, +0,0889]` | 0,5511 | 0,5511 | Không phát hiện khác biệt |
+| `C3-E3-R1 vs C3-E3-R0` | `Correctness` | 280 | 1,6250 | 1,5643 | `+0,0607 [-0,0099, +0,1274]` | 0,1247 | 0,3603 | Xu hướng tăng (+0,0607), chưa vượt ngưỡng sau Holm |
+| `C1-E3-R0 vs C3-E3-R0` | $H_{\text{gold}}$ | 225 | 17,78% | 18,22% | `-0,44% [-3,54%, +2,54%]` | 1,0000 | 1,0000 | Không phát hiện khác biệt |
+| `C3-E0-R0 vs C3-E3-R0` | $H_{\text{gold}}$ | 196 | 15,82% | 16,33% | `-0,51% [-4,41%, +3,69%]` | 1,0000 | 1,0000 | Không phát hiện khác biệt |
+| `C3-E5-R0 vs C3-E3-R0` | $H_{\text{gold}}$ | 228 | 19,30% | 17,11% | `+2,19% [-1,19%, +5,78%]` | 0,3597 | 1,0000 | Không phát hiện khác biệt |
+| `C3-E3-R1 vs C3-E3-R0` | $H_{\text{gold}}$ | 229 | 18,78% | 17,47% | `+1,31% [-2,13%, +4,81%]` | 0,6201 | 1,0000 | Không phát hiện khác biệt |
+
+### 5.3. Bảng RAH kèm Khoảng tin cậy 95% và Tỷ phần `RAH / H_gold` theo miền (Quyết định D5)
+
+| Miền | Cấu hình | $H_{\text{gold}}$ (95% Cluster CI) | $H_{\text{gold}}(\text{oracle})$ | `n_pairs` | $\text{RAH} = H_{\text{gold}}(k) - H_{\text{gold}}(\text{oracle})$ (95% Cluster CI) | Tỷ phần $\text{RAH} / H_{\text{gold}}(k)$ |
+|---|---|---|---|---:|---:|---:|
+| **Zalo Legal** | `C3-E3-R0` *(neo)* | `25,12% [17,57%, 30,93%]` | `4,58% [2,09%, 7,44%]` | 189 | **`+17,46% [+10,93%, +23,23%]`** | **69,50%** |
+| **Zalo Legal** | `C4-E3-R0` | `24,62% [17,77%, 31,18%]` | `4,58% [2,09%, 7,44%]` | 187 | **`+17,65% [+10,73%, +24,14%]`** | **71,67%** |
+| **Zalo Legal** | `C5-E3-R0` (`ViStructChunk`) | `28,83% [21,49%, 34,06%]` | `4,58% [2,09%, 7,44%]` | 206 | **`+22,33% [+15,43%, +28,16%]`** | **77,46%** |
+| **Zalo Legal** | `C5_nohead-E3-R0` | `32,04% [24,87%, 37,50%]` | `4,58% [2,09%, 7,44%]` | 173 | **`+26,59% [+20,12%, +32,20%]`** | **82,98%** |
+| **Zalo Legal** | `C3-E0-R0` (`BM25[word]`) | `28,35% [20,00%, 36,96%]` | `4,58% [2,09%, 7,44%]` | 187 | **`+21,93% [+13,37%, +30,72%]`** | **77,34%** |
+| **Zalo Legal** | `C3-E5-R0` (`Hybrid[word]`) | `25,59% [18,18%, 31,15%]` | `4,58% [2,09%, 7,44%]` | 202 | **`+20,30% [+12,99%, +25,74%]`** | **79,31%** |
+| **Zalo Legal** | `C3-E3-R1` (`Dense+R1`) | `25,69% [19,21%, 30,57%]` | `4,58% [2,09%, 7,44%]` | 205 | **`+19,51% [+12,92%, +24,52%]`** | **75,96%** |
+| **ViQuAD** | `C3-E3-R0` *(neo)* | `19,07% [14,75%, 23,60%]` | `10,20% [6,35%, 14,17%]` | 222 | **`+6,76% [+2,93%, +10,55%]`** | **35,44%** |
+| **ViQuAD** | `C1-E3-R0` | `18,70% [14,04%, 23,93%]` | `10,20% [6,35%, 14,17%]` | 220 | **`+6,82% [+2,94%, +11,01%]`** | **36,47%** |
+| **ViQuAD** | `C3-E0-R0` (`BM25[word]`) | `16,91% [12,24%, 21,90%]` | `10,20% [6,35%, 14,17%]` | 200 | **`+5,50% [+0,98%, +10,53%]`** | **32,53%** |
+| **ViQuAD** | `C3-E5-R0` (`Hybrid[word]`) | `20,58% [16,13%, 25,10%]` | `10,20% [6,35%, 14,17%]` | 230 | **`+9,57% [+5,44%, +13,70%]`** | **46,49%** |
+| **ViQuAD** | `C3-E3-R1` (`Dense+R1`) | `19,92% [15,29%, 24,50%]` | `10,20% [6,35%, 14,17%]` | 234 | **`+8,12% [+4,35%, +11,93%]`** | **40,76%** |
+
+> **Kết luận cho RQ4 / H4:** Khoảng tin cậy 95% của `RAH` trên toàn bộ 12 cấu hình RAG ở cả hai miền đều **dương chặt (không chứa 0)**. Trên miền pháp luật Zalo, **69,5% – 83,0% tổng ảo giác $H_{\text{gold}}$** bắt nguồn từ tầng truy xuất (`RAH`), trong khi trên miền Wikipedia ViQuAD tỷ phần này chỉ chiếm **32,5% – 46,5%** (phần còn lại ~10,2% là ảo giác nội tại ngay cả khi đã có đoạn vàng `oracle`).
+
+---
+
+## 6. Bảng chi phí: Kích thước chỉ mục, Thông lượng nhúng & Độ trễ `p50 / p95` (`reports/cost_summary.json`)
+
+### 6.1. Kích thước chỉ mục và thời gian dựng chỉ mục theo cách phân đoạn (trên `NVIDIA A100-SXM4-40GB`)
+
+| Bộ dữ liệu | Cách phân đoạn | Số tài liệu gốc | Số chunk (`n_chunks`) | Độ dài token (TB / Trung vị / p95 / Max) | Tỷ lệ `> 512` token | Kích thước vector Dense FP32 (`1024-d`) | Thời gian tách từ BM25 (`underthesea`) | Thời gian nhúng `BAAI/bge-m3` (Thông lượng) |
+|---|---|---:|---:|---|---:|---:|---:|---:|
+| **ViQuAD** | `C1` (cố định 256) | 5.311 | 6.481 | `175,3 / 179,0 / 256 / 257` | 0,00% | 25,32 MB | 9,3 s | 26,3 s (`246,8` chunk/s) |
+| **ViQuAD** | `C3` (theo câu ≤ 256) | 5.311 | 6.504 | `174,7 / 179,5 / 249 / 256` | 0,00% | 25,41 MB | 17,5 s | 16,7 s (`388,8` chunk/s) |
+| **ViQuAD** | `C4` (nguyên đoạn) | 5.311 | 5.311 | `213,9 / 191,0 / 370 / 2.091` | 0,77% | 20,75 MB | 8,5 s | 13,1 s (`405,4` chunk/s) |
+| **Zalo Legal** | `C1` (cố định 256) | 61.425 | 113.962 | `190,4 / 238,0 / 256 / 257` | 0,00% | 445,16 MB | 138,8 s | 132,7 s (`859,1` chunk/s) |
+| **Zalo Legal** | `C3` (theo câu ≤ 256) | 61.425 | 128.733 | `168,5 / 194,0 / 248 / 257` | 0,00% | 502,86 MB | 147,3 s | 147,2 s (`872,7` chunk/s) |
+| **Zalo Legal** | `C4` (nguyên điều) | 61.425 | 61.425 | `353,2 / 223,0 / 946 / 67.395` | **17,45%** | 239,94 MB | 142,1 s | 107,8 s (`569,7` chunk/s) |
+| **Zalo Legal** | **`C5` (`ViStructChunk`)** | 61.425 | **326.759** | `91,7 / 76,0 / 213 / 717` | **0,00%** | 1.276,40 MB | 197,8 s | 216,6 s (`1.507,7` chunk/s) |
+| **Zalo Legal** | `C5_nohead` (bỏ tiêu đề) | 61.425 | 326.759 | `64,5 / 49,0 / 185 / 257` | 0,00% | 1.276,40 MB | 148,3 s | 169,6 s (`1.925,5` chunk/s) |
+
+### 6.2. Độ trễ truy vấn, xếp hạng lại (`R1`) và sinh câu trả lời (`p50`, `p95` sau khi bỏ lượt đầu)
+
+- **Nhúng truy vấn (`A100`):** `BAAI/bge-m3` đạt `103,5` truy vấn/giây (`~9,66 ms/truy vấn`); `AITeamVN/Vietnamese_Embedding_v2` đạt `137,5` truy vấn/giây (`~7,27 ms/truy vấn`); `intfloat/multilingual-e5-large` đạt `131,4` truy vấn/giây (`~7,61 ms/truy vấn`).
+- **Xếp hạng lại Top-20 bằng Cross-Encoder `R1` (`BAAI/bge-reranker-v2-m3`, `A100`, bỏ lượt đầu trên 399 truy vấn):**
+  - **ViQuAD test:** `p50 = 38,20–38,50 ms`, `p95 = 39,50–39,90 ms` ở `C3`; `p50 = 38,50–38,90 ms`, `p95 = 39,90–43,21 ms` ở `C4`.
+  - **Zalo Legal test:** `p50 = 38,80–38,90 ms`, `p95 = 40,00–40,21 ms` ở `C3`; `p50 = 38,60–39,10 ms`, `p95 = 42,60–43,92 ms` ở `C5 (ViStructChunk)`; `p50 = 51,10–51,70 ms`, `p95 = 56,50–57,81 ms` ở `C4` (do điều luật nguyên văn dài tới 512 token).
+- **Độ trễ sinh câu trả lời theo luồng (`Qwen3.5-9B-GGUF:Q4_K_M`, `llama-server` continuous batching):**
+  - **ViQuAD test:** `closed_book` (`p50 = 0,70 s`, `p95 = 2,61 s`), `oracle` (`p50 = 2,00 s`, `p95 = 3,79 s`), `C3-E3-R0` (`p50 = 3,22 s`, `p95 = 6,75 s`), các cấu hình `C1/C3` chạy ở `16 slots` (`p50 = 5,74–6,15 s`, `p95 = 11,45–12,51 s`, thông lượng tổng toàn server đạt `~135–140 câu/phút`).
+  - **Zalo Legal test:** `closed_book` (`p50 = 0,78 s`, `p95 = 3,64 s`), `oracle` (`p50 = 3,38 s`, `p95 = 7,17 s`), `C3-E3-R0` (`p50 = 4,66 s`, `p95 = 11,00 s`), **`C5-E3-R0` (`p50 = 6,04 s`, `p95 = 14,34 s` ở `16 slots` — nhanh gấp ~2× so với `C4-E3-R0` có `p50 = 11,84 s`, `p95 = 26,80 s` do `C5` chỉ đưa vào 5 khoản gọn ~91 token thay vì 5 điều luật dài tới 1.024 token!)**.
+
 Chỉ lưu số liệu tổng hợp lên Git; log runtime và JSONL nằm trong thư mục `results/` và `data/retrieval_cache/` được bỏ qua theo `.gitignore`.

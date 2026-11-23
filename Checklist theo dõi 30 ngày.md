@@ -79,19 +79,19 @@ Dùng cùng `Kế hoạch chi tiết 30 ngày.md`. Mục tiêu từng ngày đư
 
 | Xong | Ngày | Mục tiêu cuối ngày | Ngày đạt | Giờ | Ghi chú |
 |---|---|---|---|---|---|
-| [ ] | Thứ Năm 26/11 | Có bảng Giai đoạn A kèm khoảng tin cậy cho mọi cấu hình dùng BM25, `BAAI/bge-m3` và hybrid (30 trên Zalo, 18 trên ViQuAD); các cấu hình E2 và E4 (20 + 12) có trong bảng hoặc có ngày hoàn thành không muộn hơn 02/12 | | | Đã chạy xong toàn bộ 30/30 cấu hình Zalo (`BM25, bge-m3, hybrid × R0, R1`) và 30/30 cấu hình ViQuAD (kể cả `E2, E4`) tại `reports/phase_a_summary.json`; còn bổ sung cột khoảng tin cậy bootstrap 95% |
+| [x] | Thứ Năm 26/11 | Có bảng Giai đoạn A kèm khoảng tin cậy cho mọi cấu hình dùng BM25, `BAAI/bge-m3` và hybrid (30 trên Zalo, 18 trên ViQuAD); các cấu hình E2 và E4 (20 + 12) có trong bảng hoặc có ngày hoàn thành không muộn hơn 02/12 | 23/11 | | Đã hoàn tất 30/30 cấu hình Zalo (`BM25, bge-m3, hybrid × R0, R1`) và 30/30 cấu hình ViQuAD (kể cả 12/12 cấu hình `E2, E4`) kèm **khoảng tin cậy cluster bootstrap 95%** (`1.000` lần lấy mẫu lại theo cụm `title` / nhóm điều luật vàng, `seed=0`) tại `reports/phase_a_summary.json` và [báo cáo tổng hợp](reports/benchmark-colab-2026-11-20.md) |
 | [ ] | Thứ Sáu 27/11 | 3.600 lượt sinh trên Zalo đã chạy xong hoặc đang chạy mà không có lỗi định dạng; demo thô chạy được ở phần truy xuất (chọn cấu hình, hiển thị 5 đoạn căn cứ) | | | Đã chạy xong toàn bộ 9/9 cấu hình Zalo test (`3.480/3.480` câu trả lời, do `oracle` chỉ chạy trên 280 câu trả lời được theo D5), 0 lỗi định dạng; còn dựng file demo `app.py` |
 | [x] | Thứ Bảy 28/11 | Đủ 6.400 câu trả lời, không thiếu, không trùng; có fabrication rate và false refusal sơ bộ | 23/11 | | Đã sinh đủ 100% **16/16 cấu hình Giai đoạn B** (`3.480` câu Zalo test + `2.680` câu ViQuAD test = `6.160/6.160` câu, do `oracle` ở hai bộ chỉ sinh trên `280` câu có đáp án theo D5), không thiếu, không trùng (`data/retrieval_cache/answers_{viquad,zalo}_test.jsonl`). Trên Zalo test, `C5-E3-R0 (ViStructChunk)` đạt `false_refusal = 20,71%` (thấp nhất trong mọi cấu hình RAG; `C5_nohead = 35,36%`, `C3 = 27,50%`, `C4 = 28,93%`). Trên ViQuAD test, `C3-E3-R1` đạt `false_refusal = 12,14%`, `fabrication = 30,83%`, `contains_gold = 55,36%`, `F1 = 0,4072` |
 | [x] | Chủ nhật 29/11 | Khoảng 4.480 câu trả lời cần chấm đều có điểm judge, hoặc được ghi rõ là lỗi | 23/11 | | Đã chấm xong toàn bộ **`4.480 / 4.480` câu trả lời của các câu hỏi trả lời được** (`16 cấu hình × 280 câu`: `1.960` dòng `judge_viquad_test.jsonl` + `2.520` dòng `judge_zalo_test.jsonl`) bằng `unsloth/Qwen3.5-9B-GGUF:Q4_K_M` với **`0` lỗi JSON (`n_judge_errors = 0`) và `0` câu thiếu (`n_judge_missing = 0`)** |
 | [x] | Thứ Hai 30/11 | Bảng kết quả một dòng cho mỗi cặp (cấu hình, câu hỏi) có đủ mọi chỉ số và qua được các kiểm tra hợp lý | 23/11 | | Đã xuất bảng master `data/retrieval_cache/master_phase_b_{viquad,zalo}.jsonl` (`2.680 + 3.480 = 6.160` dòng) và bảng tổng hợp `reports/phase_b_summary.json` ([chi tiết](reports/benchmark-colab-2026-11-20.md)). Qua toàn bộ kiểm tra hợp lý: `oracle` có `correctness` cao nhất (`1,7000` trên ViQuAD; `1,6214` trên Zalo), `closed_book` thấp nhất (`0,1964` và `0,1429`); trên Zalo, `C5-E3-R0` nâng `correctness` từ `0,9500` (`C5_nohead`) lên **`1,2607`** (+32,7%) và giảm `H_gold` từ `32,04%` xuống `28,83%` (`RAH: +26,59% → +22,33%`) |
-| [ ] | Thứ Ba 01/12 | Có bảng chi phí: độ trễ (trung vị, phân vị 95), kích thước chỉ mục, môi trường chạy | | | |
+| [x] | Thứ Ba 01/12 | Có bảng chi phí: độ trễ (trung vị, phân vị 95), kích thước chỉ mục, môi trường chạy | 23/11 | | Đã xuất đầy đủ tại `reports/cost_summary.json` và Mục 6 của [báo cáo tổng hợp](reports/benchmark-colab-2026-11-20.md): kích thước chỉ mục & thời gian tách từ/nhúng (`C1..C5_nohead`), độ trễ `p50/p95` bỏ lượt đầu của truy xuất, reranker `R1` (`p50 = 38,2–39,1 ms` ở `C3/C5`) và sinh câu trả lời (`C5-E3-R0` có `p50 = 6,04s` nhanh gấp ~2× `C4-E3-R0` `11,84s`), cùng thông số môi trường (`A100/L4`, CUDA 13.0, commit `llama.cpp`, revision mô hình) |
 | [ ] | Thứ Tư 02/12 | Không còn việc tồn của tuần 3; demo đã nối mô hình sinh và trả lời được 10 câu hỏi thử | | | |
 
 **Cổng kiểm tra cuối giai đoạn:**
 
-- [ ] Bảng Giai đoạn A đầy đủ
+- [x] Bảng Giai đoạn A đầy đủ
 - [x] Bảng kết quả Giai đoạn B đầy đủ, qua kiểm tra hợp lý
-- [ ] Bảng chi phí
+- [x] Bảng chi phí
 - [ ] Demo chạy được từ câu hỏi đến câu trả lời kèm căn cứ
 
 **Đánh giá giai đoạn:**
@@ -109,7 +109,7 @@ Dùng cùng `Kế hoạch chi tiết 30 ngày.md`. Mục tiêu từng ngày đư
 
 | Xong | Ngày | Mục tiêu cuối ngày | Ngày đạt | Giờ | Ghi chú |
 |---|---|---|---|---|---|
-| [ ] | Thứ Năm 03/12 | Mọi chỉ số có khoảng tin cậy 95%; mọi so sánh trong họ đã ghi trước có giá trị p hiệu chỉnh Holm; có RAH cho từng cấu hình và từng miền | | | |
+| [x] | Thứ Năm 03/12 | Mọi chỉ số có khoảng tin cậy 95%; mọi so sánh trong họ đã ghi trước có giá trị p hiệu chỉnh Holm; có RAH cho từng cấu hình và từng miền | 23/11 | | Đã tính và lưu đầy đủ vào `reports/phase_a_summary.json`, `reports/phase_b_summary.json` và Mục 5 của [báo cáo tổng hợp](reports/benchmark-colab-2026-11-20.md): khoảng tin cậy cluster bootstrap 95% (`1.000` lần, `seed=0`) cho toàn bộ chỉ số; kiểm định hoán vị ghép cặp (`10.000` lần) kèm hiệu chỉnh Holm cho 7 so sánh Zalo (`C5-E3-R0 vs C5_nohead-E3-R0` đạt `+0,3107 [+0,2161, +0,4051]`, $p_{\text{Holm}} = 0,0007$) và 4 so sánh ViQuAD (`C3-E0-R0 vs C3-E3-R0` đạt `-0,2000 [-0,3064, -0,1029]`, $p_{\text{Holm}} = 0,0008$); RAH kèm 95% CI và tỷ phần `RAH / H_gold` (`69,5%–83,0%` trên Zalo so với `32,5%–46,5%` trên ViQuAD) |
 | [ ] | Thứ Sáu 04/12 | 30 trường hợp ảo giác đã gắn nguyên nhân; có ba hình, các bảng cuối cùng và bảng khuyến nghị có điều kiện theo miền; demo chạy mặc định bằng cấu hình khuyến nghị | | | |
 | [ ] | Thứ Bảy 05/12 | Mọi tài liệu sẽ trích đã được xác minh từ nguồn gốc; có bản nháp mục phương pháp và thiết lập thực nghiệm | | | |
 | [ ] | Chủ nhật 06/12 | Có bản nháp mục kết quả và thảo luận; mỗi câu hỏi RQ1–RQ4 có một kết luận kèm số liệu | | | |

@@ -3,6 +3,8 @@ from collections import Counter
 import math
 import re
 
+import numpy as np
+
 METRIC_KEYS = ('r5', 'r20', 'mrr10', 'ndcg5')
 
 
@@ -70,3 +72,52 @@ def mean_metrics(rows):
     if not rows:
         raise ValueError('Không có truy vấn nào để lấy trung bình.')
     return {k: sum(r[k] for r in rows) / len(rows) for k in METRIC_KEYS}
+
+
+def cluster_bootstrap_ci(values, clusters=None, n_boot=1000, seed=0):
+    """Khoảng tin cậy bootstrap 95% (1.000 lần lấy mẫu lại theo cụm `title` hoặc nhóm điều luật; D1/Ngày 15 & 22)."""
+    vals = np.asarray(list(values), dtype=float)
+    if len(vals) == 0:
+        return (None, None)
+    if clusters is None:
+        s = vals
+        n = np.ones(len(vals), dtype=float)
+    else:
+        cl = list(clusters)
+        order = sorted(set(cl), key=str)
+        idx_map = {c: i for i, c in enumerate(order)}
+        s = np.zeros(len(order), dtype=float)
+        n = np.zeros(len(order), dtype=float)
+        for v, c in zip(vals, cl):
+            g = idx_map[c]
+            s[g] += v
+            n[g] += 1.0
+    rng = np.random.default_rng(seed)
+    picks = rng.integers(0, len(s), (n_boot, len(s)))
+    means = s[picks].sum(1) / n[picks].sum(1)
+    lo, hi = np.percentile(means, [2.5, 97.5])
+    return (float(lo), float(hi))
+
+
+def paired_perm(a, b, n=10000, seed=0):
+    """Kiểm định hoán vị ghép cặp hai phía (10.000 hoán vị, đổi dấu hiệu số từng câu hỏi; Ngày 22)."""
+    d = np.asarray(list(a), dtype=float) - np.asarray(list(b), dtype=float)
+    if len(d) == 0:
+        return None
+    rng = np.random.default_rng(seed)
+    flips = rng.choice([-1, 1], (n, len(d)))
+    return float(((np.abs((flips * d).mean(1)) >= abs(d.mean())).sum() + 1) / (n + 1))
+
+
+def holm_adjust(p_values):
+    """Hiệu chỉnh Holm–Bonferroni theo bước giảm (step-down) cho danh sách giá trị p (Ngày 22)."""
+    m = len(p_values)
+    if m == 0:
+        return []
+    order = sorted(range(m), key=lambda i: p_values[i])
+    adj = [0.0] * m
+    running_max = 0.0
+    for rank, idx in enumerate(order):
+        running_max = max(running_max, (m - rank) * float(p_values[idx]))
+        adj[idx] = min(1.0, running_max)
+    return adj
