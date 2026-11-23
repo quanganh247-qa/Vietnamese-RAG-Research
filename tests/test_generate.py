@@ -1,8 +1,9 @@
 """Kiểm tra sinh câu trả lời, cắt token ngữ cảnh, nhận diện từ chối và tóm tắt (không tải LLM)."""
 import re
 
-from ragvi.generate import (PROMPT_CB, build_prompt, clean_generation, contains_gold_answer, is_refusal,
-                            run_generate, select_questions, summarize_generation, truncate_tokens)
+from ragvi.generate import (PROMPT_CB, build_prompt, chunking_of_config, clean_generation, contains_gold_answer,
+                            is_refusal, run_generate, select_questions, subset_chunks, summarize_generation,
+                            truncate_tokens)
 from ragvi.retrieval import read_rows
 
 
@@ -54,3 +55,31 @@ def test_select_questions_stratified_50():
     assert len(picked) == 50
     assert sum(q['answerable'] for q in picked) == 35
     assert sum(not q['answerable'] for q in picked) == 15
+
+
+def test_dedup_across_configs_and_subset_chunks(tmp_path):
+    assert chunking_of_config('C5_nohead-E3-R0') == 'c5_nohead'
+    assert chunking_of_config('C3-E0-R0') == 'c3'
+    assert chunking_of_config('closed_book') is None
+    corpus = {'01/2020/nđ-cp+1': 'Điều 1. Phạm vi\n1. Khoản một.\n2. Khoản hai.'}
+    c5 = subset_chunks(corpus, 'c5', ['01/2020/nđ-cp+1'], tok=fake_tok)
+    c5_nh = subset_chunks(corpus, 'c5_nohead', ['01/2020/nđ-cp+1'], tok=fake_tok)
+    assert 'Văn bản 01/2020/NĐ-CP' in c5['01/2020/nđ-cp+1#1']
+    assert 'Văn bản 01/2020/NĐ-CP' not in c5_nh['01/2020/nđ-cp+1#1']
+
+    questions = [{'qid': 'q1', 'question': 'Thủ đô là gì?', 'answerable': True, 'answers': [{'text': 'Hà Nội'}]}]
+    out = tmp_path / 'answers.jsonl'
+    calls = []
+    def gen_fn(prompt):
+        calls.append(prompt)
+        return 'Hà Nội'
+
+    assert run_generate('C3-E3-R0', questions, lambda q: (['d#0'], ['Hà Nội là thủ đô.']),
+                        out, gen_fn, tok=fake_tok, limit=10) == 1
+    assert len(calls) == 1
+    # Cấu hình C3-E3-R1 có cùng (chunking='c3', qid='q1', context_ids=['d#0']) -> tái sử dụng câu trả lời, 0 lượt gọi LLM mới
+    assert run_generate('C3-E3-R1', questions, lambda q: (['d#0'], ['Hà Nội là thủ đô.']),
+                        out, gen_fn, tok=fake_tok, limit=10) == 1
+    assert len(calls) == 1
+    rows = read_rows(out)
+    assert len(rows) == 2 and rows[1]['config'] == 'C3-E3-R1' and rows[1]['seconds'] == 0.0

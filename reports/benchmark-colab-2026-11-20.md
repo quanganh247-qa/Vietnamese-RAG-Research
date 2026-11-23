@@ -168,4 +168,48 @@ Toàn bộ **2.737 lượt sinh câu trả lời** và **2.211 lượt chấm đ
    - Trên `viquad_test`, `R1` nâng nDCG@5 của mọi phương pháp thêm `+4,3` đến `+12,1` điểm (đỉnh cao là `hybrid[c4][word]+r1` với **Recall@5 = `95,71%`, nDCG@5 = `0,9253`** và `hybrid[c3][word]+r1` với **Recall@5 = `95,00%`, nDCG@5 = `0,9158`**).
    - Trên `zalo_test`, `R1` phát huy hiệu quả mạnh nhất khi chunk mang đầy đủ ngữ cảnh phân cấp (`C5`), đưa `dense[c5]+r1` lên **Recall@5 = `90,54%`, nDCG@5 = `0,8245`** và `hybrid[c5][word]+r1` lên **Recall@5 = `91,61%`, nDCG@5 = `0,8369`**.
 
+---
+
+## 4. Kết quả toàn bộ Giai đoạn B: Sinh câu trả lời & Đánh giá ảo giác (`reports/phase_b_summary.json`)
+
+Chạy trên Colab (`results/colab/phase_b-nn3pnCsI/` trên `NVIDIA A100-SXM4-40GB` và `results/colab/phase_b-sagDit0W/` trên `NVIDIA L4`) bằng `bash colab_run.sh phase_b` với mô hình sinh và Judge thống nhất **`unsloth/Qwen3.5-9B-GGUF:Q4_K_M`** (`temperature = 0, seed = 0`, tắt thinking, `JUDGE_MAX_CHARS = 15000`, cắt từng đoạn ngữ cảnh ở đúng `CTX_LIMIT = 1024` token tham chiếu theo quyết định D7). Toàn bộ **16/16 cấu hình cố định trước** (`9 Zalo test + 7 ViQuAD test` = `6.160` câu trả lời, `4.480` câu trả lời có đáp án được chấm Judge) đều đạt **100% JSON hợp lệ (`n_judge_errors = 0`, `n_judge_missing = 0`)**.
+
+### 4.1. Bảng kết quả Giai đoạn B trên `zalo_test` (9 cấu hình, `n = 400`: 280 trả lời được + 120 không trả lời được)
+
+| # | Cấu hình | Phương pháp truy xuất | Correctness (/2) ↑ | $H_{\text{gold}}$ ↓ (`n`) | $H_{\text{ctx}}$ ↓ (`n`) | RAH vs Oracle (`n_pairs`) ↓ | Nhầm điều luật (`wrong_article`) ↓ | Từ chối sai (`false_refusal`) ↓ | Từ chối đúng (`correct_refusal`) ↑ | Bịa trên câu vô đáp án (`fabrication`) ↓ | Đoạn cắt (>1.024 tok) |
+|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 1 | `closed_book` | *(không ngữ cảnh)* | 0,1429 | 91,94% (124) | – | – | 27,42% (124) | 55,71% | 57,50% | 42,50% | 0 |
+| 2 | `oracle` | *(điều luật vàng ≤ 4.000 tok)* | 1,6214 | 4,58% (240) | 4,58% (240) | 0,00% | 2,92% (240) | 14,29% | – | – | 83 |
+| 3 | `C3-E3-R0` *(neo)* | `dense[c3]` | 1,1821 | 25,12% (203) | 7,39% (203) | +17,46% (189) | 3,45% (203) | 27,50% | 56,67% | 43,33% | 0 |
+| 4 | `C4-E3-R0` | `dense[c4]` | 1,1750 | 24,62% (199) | 8,04% (199) | +17,65% (187) | 7,04% (199) | 28,93% | 55,00% | 45,00% | **388** |
+| 5 | **`C5-E3-R0` (`ViStructChunk`)** | `dense[c5]` | **1,2607** | 28,83% (222) | 9,91% (222) | +22,33% (206) | 5,41% (222) | **20,71%** | 58,33% | 41,67% | **0** |
+| 6 | `C5_nohead-E3-R0` | `dense[c5_nohead]` | 0,9500 | 32,04% (181) | 3,31% (181) | +26,59% (173) | 2,21% (181) | 35,36% | 60,83% | 39,17% | 0 |
+| 7 | `C3-E0-R0` | `bm25[c3][word]` | 1,0786 | 28,35% (194) | 6,70% (194) | +21,93% (187) | **2,06%** (194) | 30,71% | **65,83%** | **34,17%** | 0 |
+| 8 | `C3-E5-R0` | `hybrid[c3][word]` | 1,2179 | 25,59% (211) | 6,16% (211) | +20,30% (202) | 3,79% (211) | 24,64% | 55,00% | 45,00% | 0 |
+| 9 | **`C3-E3-R1`** | `dense[c3]+r1` | **1,2607** | 25,69% (218) | **5,05%** (218) | +19,51% (205) | 3,67% (218) | 22,14% | 55,00% | 45,00% | 0 |
+
+### 4.2. Bảng kết quả Giai đoạn B trên `viquad_test` (7 cấu hình, `n = 400`: 280 trả lời được + 120 không trả lời được)
+
+| # | Cấu hình | Phương pháp truy xuất | Token-F1 ↑ | EM ↑ | Chứa đáp án vàng (`contains_gold`) ↑ | Correctness (/2) ↑ | $H_{\text{gold}}$ ↓ (`n`) | $H_{\text{ctx}}$ ↓ (`n`) | RAH vs Oracle (`n_pairs`) ↓ | Từ chối sai (`false_refusal`) ↓ | Từ chối đúng (`correct_refusal`) ↑ | Bịa trên câu vô đáp án (`fabrication`) ↓ |
+|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 1 | `closed_book` | *(không ngữ cảnh)* | 0,0642 | 0,0036 | 3,93% | 0,1964 | 77,14% (70) | – | – | 75,00% | 88,33% | 11,67% |
+| 2 | `oracle` | *(đoạn vàng gốc)* | 0,4326 | 0,0071 | 57,14% | 1,7000 | 10,20% (245) | 1,22% (245) | 0,00% | 12,50% | – | – |
+| 3 | `C3-E3-R0` *(neo)* | `dense[c3]` | 0,3982 | 0,0286 | 52,14% | 1,5643 | 19,07% (236) | 2,54% (236) | +6,76% (222) | 15,71% | 64,17% | 35,83% |
+| 4 | `C1-E3-R0` | `dense[c1]` | 0,3859 | 0,0214 | 51,07% | 1,5179 | 18,70% (230) | **0,43%** (230) | +6,82% (220) | 17,86% | 65,83% | 34,17% |
+| 5 | `C3-E0-R0` | `bm25[c3][word]` | 0,3474 | 0,0214 | 46,43% | 1,3643 | **16,91%** (207) | 0,48% (207) | **+5,50%** (200) | 26,07% | **69,17%** | **30,83%** |
+| 6 | **`C3-E5-R0`** | `hybrid[c3][word]` | **0,4073** | **0,0286** | 53,93% | 1,5893 | 20,58% (243) | 0,82% (243) | +9,57% (230) | 13,21% | 65,83% | 34,17% |
+| 7 | **`C3-E3-R1`** | `dense[c3]+r1` | 0,4072 | 0,0214 | **55,36%** | **1,6250** | 19,92% (246) | 1,22% (246) | +8,12% (234) | **12,14%** | **69,17%** | **30,83%** |
+
+### 4.3. Phát hiện chính từ Giai đoạn B (RQ1–RQ4)
+
+1. **Cô lập tác động của tiêu đề phân cấp cha trong `ViStructChunk` (`C5-E3-R0` vs `C5_nohead-E3-R0`, `RQ1 / H1b`):**
+   - Khi giữ nguyên ranh giới phân đoạn theo Khoản/Điểm nhưng bổ sung tiêu đề cha `[Văn bản | Điều | Khoản]`, `C5-E3-R0` nâng **`Correctness` từ `0,9500` lên `1,2607` (+0,3107 điểm / +32,7%)**, giảm **`H_gold` từ `32,04%` xuống `28,83%` (-3,22 điểm %)**, giảm **`RAH` từ `+26,59%` xuống `+22,33%` (-4,26 điểm %)**, và giảm tỷ lệ từ chối sai **`false_refusal` từ `35,36%` xuống `20,71%` (-14,65 điểm %)**.
+   - So với `C3-E3-R0` (`Correctness = 1,1821`, `false_refusal = 27,50%`) và `C4-E3-R0` (`Correctness = 1,1750`, `false_refusal = 28,93%`, `388` đoạn bị cắt ở 1.024 token, `wrong_article = 7,04%`), `C5-E3-R0` đạt `Correctness = 1,2607` (ngang với cấu hình dùng reranker `C3-E3-R1`), `0` đoạn bị cắt token và giảm `wrong_article` xuống `5,41%`.
+2. **So sánh phương pháp truy xuất ở tầng sinh câu trả lời (`E0` vs `E3` vs `E5`, `RQ2`):**
+   - Lợi thế truy xuất ở Giai đoạn A chuyển hóa nhất quán sang độ đúng câu trả lời ở cả hai miền: **`C3-E5-R0` (`Hybrid[word]`) > `C3-E3-R0` (`Dense bge-m3`) > `C3-E0-R0` (`BM25[word]`)** (`Correctness` trên Zalo: `1,2179 > 1,1821 > 1,0786`; trên ViQuAD: `1,5893 > 1,5643 > 1,3643` và `F1: 0,4073 > 0,3982 > 0,3474`).
+3. **Tác động của Reranker `R1` (`C3-E3-R1` vs `C3-E3-R0`, `RQ3`):**
+   - `C3-E3-R1` đạt `Correctness` cao nhất trên cả hai bộ dữ liệu (`1,6250/2` trên ViQuAD test và `1,2607/2` trên Zalo test), giảm mạnh `false_refusal` (`15,71% → 12,14%` trên ViQuAD; `27,50% → 22,14%` trên Zalo) và giảm ảo giác so với ngữ cảnh `H_ctx` (`2,54% → 1,22%` trên ViQuAD; `7,39% → 5,05%` trên Zalo).
+4. **So sánh ảo giác quy cho truy xuất (`RAH`) giữa hai miền (`RQ4 / H4`):**
+   - Trên toàn bộ các cấu hình RAG, `RAH` trên miền pháp luật Zalo (`+17,46%` đến `+26,59%`) luôn cao gấp **2,2× – 3,9×** so với miền bách khoa ViQuAD (`+5,50%` đến `+9,57%`), chứng minh rằng trong miền pháp luật, truy xuất thiếu hoặc sai điều khoản là nguồn gây ảo giác chủ đạo của hệ thống RAG.
+
 Chỉ lưu số liệu tổng hợp lên Git; log runtime và JSONL nằm trong thư mục `results/` và `data/retrieval_cache/` được bỏ qua theo `.gitignore`.

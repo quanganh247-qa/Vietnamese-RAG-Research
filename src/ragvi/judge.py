@@ -14,7 +14,8 @@ import re
 import time
 from pathlib import Path
 
-from ragvi.generate import clean_generation, is_refusal, load_generator
+from ragvi.generate import (CTX_LIMIT, chunking_of_config, clean_generation, is_refusal, load_generator,
+                            subset_chunks, truncate_tokens)
 from ragvi.rerank import load_units
 from ragvi.retrieval import load_jsonl, open_append, read_rows
 
@@ -131,13 +132,48 @@ def run_judge(answer_rows, questions_by_qid, context_of, gold_of, out_path, judg
     """Chấm điểm các câu trả lời của câu hỏi trả lời được (`answerable=True`), ghi nối tiếp vào `out_path`.
 
     Khi `workers > 1` (ví dụ gọi `llama-server` có continuous batching), gửi song song `workers` yêu cầu.
+    Tự động tái sử dụng kết quả chấm khi prompt `(qid, context, gold, answer)` trùng khít với cấu hình đã chấm.
     """
-    done = {(r['config'], r['qid']) for r in read_rows(out_path) if not r.get('error')}
+    existing = [r for r in read_rows(out_path) if not r.get('error')]
+    done = {(r['config'], r['qid']) for r in existing}
     pending = [row for row in answer_rows
                if row.get('answerable', True) and (row['config'], row['qid']) not in done
                and row['qid'] in questions_by_qid]
     if not pending:
         return 0
+
+    ans_by_key = {(r['config'], r['qid']): r for r in answer_rows}
+    gold_cache = {}
+    ctx_cache = {}
+    prompt_cache = {}
+
+    def _gold(qid):
+        hit = gold_cache.get(qid)
+        if hit is None:
+            hit = _clip(gold_of(questions_by_qid[qid]))
+            gold_cache[qid] = hit
+        return hit
+
+    def _ctx(config, qid):
+        if config == 'closed_book':
+            return '(không cung cấp - closed-book)'
+        key = (config, qid)
+        hit = ctx_cache.get(key)
+        if hit is None:
+            hit = _clip(context_of(config, qid))
+            ctx_cache[key] = hit
+        return hit
+
+    for r in existing:
+        if r.get('refused') or r.get('claims') is None or r.get('correctness') is None:
+            continue
+        cfg, qid = r['config'], r['qid']
+        arow = ans_by_key.get((cfg, qid))
+        if arow is not None and qid in questions_by_qid:
+            p = PROMPT_JUDGE.format(
+                question=questions_by_qid[qid]['question'], context=_ctx(cfg, qid),
+                gold=_gold(qid), answer=arow.get('answer', ''))
+            prompt_cache[p] = {'claims': r['claims'], 'correctness': r['correctness']}
 
     def _one(row):
         config, qid = row['config'], row['qid']
@@ -149,14 +185,19 @@ def run_judge(answer_rows, questions_by_qid, context_of, gold_of, out_path, judg
             scores = derive_judge_metrics({'claims': [], 'correctness': 0}, True, is_closed_book=is_cb)
             return {'config': config, 'qid': qid, 'judge_model': model_name, 'refused': True,
                     'claims': [], **scores, **cite, 'error': None}
-        ctx_text = '(không cung cấp - closed-book)' if is_cb else _clip(context_of(config, qid))
         prompt = PROMPT_JUDGE.format(
-            question=q['question'], context=ctx_text, gold=_clip(gold_of(q)), answer=row.get('answer', ''))
+            question=q['question'], context=_ctx(config, qid), gold=_gold(qid), answer=row.get('answer', ''))
+        cached = prompt_cache.get(prompt)
+        if cached is not None:
+            scores = derive_judge_metrics(cached, False, is_closed_book=is_cb)
+            return {'config': config, 'qid': qid, 'judge_model': model_name, 'refused': False,
+                    'claims': cached['claims'], **scores, **cite, 'seconds': 0.0, 'error': None}
         t0 = time.perf_counter()
         raw = judge_fn(prompt)
         elapsed = round(time.perf_counter() - t0, 3)
         try:
             parsed = parse_judge_json(raw)
+            prompt_cache[prompt] = {'claims': parsed['claims'], 'correctness': parsed['correctness']}
             scores = derive_judge_metrics(parsed, False, is_closed_book=is_cb)
             return {'config': config, 'qid': qid, 'judge_model': model_name, 'refused': False,
                     'claims': parsed['claims'], **scores, **cite, 'seconds': elapsed, 'error': None}
@@ -316,15 +357,54 @@ def main(argv=None):
     questions = {q['qid']: q for q in load_jsonl(q_path)}
     corpus_text_of, _, _ = load_units(corpus_path)
     unit_text_of = dict(corpus_text_of)
+    chunks_by_c = {}
     if args.chunks and Path(args.chunks).exists():
-        chunk_text_of, _, _ = load_units(args.chunks)
-        unit_text_of.update(chunk_text_of)
+        cpath = Path(args.chunks)
+        if cpath.is_file():
+            chunk_text_of, _, _ = load_units(cpath)
+            unit_text_of.update(chunk_text_of)
+            for tag in ('c5_nohead', 'c5', 'c4', 'c3', 'c1'):
+                if cpath.stem.endswith(f'__{tag}'):
+                    chunks_by_c[tag] = dict(corpus_text_of, **chunk_text_of)
+                    break
     ctx_ids_of = {(r['config'], r['qid']): r.get('context_ids') or [] for r in answers}
+    tok = None
+    for cfg in sorted({r['config'] for r in answers}):
+        c_name = chunking_of_config(cfg)
+        if not c_name:
+            continue
+        if c_name not in chunks_by_c:
+            chunks_by_c[c_name] = dict(corpus_text_of)
+        missing_docs = [cid.rsplit('#', 1)[0]
+                        for r in answers if r['config'] == cfg and not r.get('refused')
+                        for cid in (r.get('context_ids') or []) if cid not in chunks_by_c[c_name]]
+        if missing_docs:
+            if tok is None and c_name != 'c4':
+                from transformers import AutoTokenizer
+                from ragvi.retrieval import DEFAULT_MODEL
+                tok = AutoTokenizer.from_pretrained(DEFAULT_MODEL)
+            chunks_by_c[c_name].update(subset_chunks(corpus_text_of, c_name, missing_docs, tok=tok))
     gold_of = lambda q: format_gold_evidence(q, corpus_text_of)
+    trunc_cache = {}
+
+    def _trunc_passage(p):
+        nonlocal tok
+        if len(p) <= 2000:
+            return p
+        hit = trunc_cache.get(p)
+        if hit is None:
+            if tok is None:
+                from transformers import AutoTokenizer
+                from ragvi.retrieval import DEFAULT_MODEL
+                tok = AutoTokenizer.from_pretrained(DEFAULT_MODEL)
+            hit, _ = truncate_tokens(p, tok, CTX_LIMIT)
+            trunc_cache[p] = hit
+        return hit
 
     def context_of(cfg, qid):
         cids = ctx_ids_of.get((cfg, qid)) or []
-        passages = [unit_text_of[c] for c in cids if c in unit_text_of]
+        u_map = chunks_by_c.get(chunking_of_config(cfg), unit_text_of)
+        passages = [_trunc_passage(u_map[c]) for c in cids if c in u_map]
         if passages:
             return '\n'.join(f'[{i}] {p}' for i, p in enumerate(passages, 1))
         return gold_of(questions[qid])

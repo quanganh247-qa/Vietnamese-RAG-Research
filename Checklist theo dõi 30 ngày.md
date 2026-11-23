@@ -56,12 +56,12 @@ Dùng cùng `Kế hoạch chi tiết 30 ngày.md`. Mục tiêu từng ngày đư
 | [x] | Chủ nhật 22/11 | Judge trả về JSON hợp lệ trên 20 câu dev; chỉ số "nhầm điều luật" chạy được | 21/11 | | `unsloth/Qwen3.5-9B-GGUF:Q4_K_M` (tắt thinking, `--parallel 12`) chấm xong toàn bộ **2.211/2.211 câu trả lời có đáp án** trên cả `viquad_{dev,test}` và `zalo_{dev,test}` với **100% JSON hợp lệ (`n_judge_errors = 0`, `n_judge_missing = 0`)**. Chỉ số "nhầm điều luật" (`wrong_article`) chạy trên toàn bộ Zalo dev/test ([bảng tổng hợp](reports/benchmark-colab-2026-11-20.md)) |
 | [x] | Thứ Hai 23/11 | Có 100 câu trả lời dev đã xáo trộn để gán nhãn; 50 câu đầu đã có nhãn người | 22/11 | | Đã sinh 2 phiếu gán nhãn ẩn danh (`seed=0`, mã hóa cấu hình bằng `blind_id`) gồm 50 mẫu ViQuAD dev (`reports/phieu/human_dev_viquad.md`) và 50 mẫu Zalo dev (`reports/phieu/human_dev_zalo.md`); 50 mẫu đầu (ViQuAD dev) đã chấm độc lập xong (`Correctness`: 39 mẫu `2`, 4 mẫu `1`, 7 mẫu `0`; `H_gold=1`: 9/50) |
 | [x] | Thứ Ba 24/11 | 100 câu có đủ nhãn người; có Cohen's κ giữa judge và người cho H_gold, H_ctx và correctness | 22/11 | | Đã chấm độc lập đủ 100/100 mẫu dev. Phát hiện `JUDGE_MAX_CHARS = 3000` cắt mất Khoản 3–10 của điều luật dài trên Zalo; sau khi nâng `JUDGE_MAX_CHARS = 15000` (khớp trần 4.000 token của `oracle`) và chấm lại các câu điều luật dài, **Cohen's κ trên 100 mẫu dev đạt: `κ(H_gold) = 0,8163`, `κ(correctness_linear) = 0,8519`, `κ(H_ctx) = 0,3871` (tỷ lệ đồng thuận tuyệt đối `H_ctx` đạt `72/76 = 94,74%`)**. Riêng ViQuAD dev (50 mẫu): `κ(H_gold) = 0,7216`, `κ(correctness) = 0,8623`; riêng Zalo dev (50 mẫu): `κ(H_gold) = 0,8764`, `κ(correctness) = 0,8324`, `κ(H_ctx) = 0,4776` |
-| [ ] | Thứ Tư 25/11 | Có quyết định tiếp tục hay chuyển phương án dự phòng; prompt, cấu hình và tập test đã đóng băng (thẻ `freeze-b`); người hướng dẫn đã nhận bản tóm tắt thiết kế | | | |
+| [ ] | Thứ Tư 25/11 | Có quyết định tiếp tục hay chuyển phương án dự phòng; prompt, cấu hình và tập test đã đóng băng (thẻ `freeze-b`); người hướng dẫn đã nhận bản tóm tắt thiết kế | | | Đã chốt quyết định tiếp tục Giai đoạn B, đóng băng prompt sinh, prompt judge (`JUDGE_MAX_CHARS = 15000`), tập test và 16 cấu hình Giai đoạn B (`freeze-b`); còn mục gửi bản tóm tắt cho người hướng dẫn |
 
 **Cổng kiểm tra cuối giai đoạn:**
 
 - [x] Pipeline đầu-cuối chạy được trên dev của cả hai bộ
-- [ ] Tập test, prompt và danh sách cấu hình đã đóng băng
+- [x] Tập test, prompt và danh sách cấu hình đã đóng băng
 - [x] κ của H_gold từ 0,6 trở lên
 
 **Đánh giá giai đoạn:**
@@ -79,18 +79,18 @@ Dùng cùng `Kế hoạch chi tiết 30 ngày.md`. Mục tiêu từng ngày đư
 
 | Xong | Ngày | Mục tiêu cuối ngày | Ngày đạt | Giờ | Ghi chú |
 |---|---|---|---|---|---|
-| [ ] | Thứ Năm 26/11 | Có bảng Giai đoạn A kèm khoảng tin cậy cho mọi cấu hình dùng BM25, `BAAI/bge-m3` và hybrid (30 trên Zalo, 18 trên ViQuAD); các cấu hình E2 và E4 (20 + 12) có trong bảng hoặc có ngày hoàn thành không muộn hơn 02/12 | | | |
-| [ ] | Thứ Sáu 27/11 | 3.600 lượt sinh trên Zalo đã chạy xong hoặc đang chạy mà không có lỗi định dạng; demo thô chạy được ở phần truy xuất (chọn cấu hình, hiển thị 5 đoạn căn cứ) | | | |
-| [ ] | Thứ Bảy 28/11 | Đủ 6.400 câu trả lời, không thiếu, không trùng; có fabrication rate và false refusal sơ bộ | | | |
-| [ ] | Chủ nhật 29/11 | Khoảng 4.480 câu trả lời cần chấm đều có điểm judge, hoặc được ghi rõ là lỗi | | | |
-| [ ] | Thứ Hai 30/11 | Bảng kết quả một dòng cho mỗi cặp (cấu hình, câu hỏi) có đủ mọi chỉ số và qua được các kiểm tra hợp lý | | | |
+| [ ] | Thứ Năm 26/11 | Có bảng Giai đoạn A kèm khoảng tin cậy cho mọi cấu hình dùng BM25, `BAAI/bge-m3` và hybrid (30 trên Zalo, 18 trên ViQuAD); các cấu hình E2 và E4 (20 + 12) có trong bảng hoặc có ngày hoàn thành không muộn hơn 02/12 | | | Đã chạy xong toàn bộ 30/30 cấu hình Zalo (`BM25, bge-m3, hybrid × R0, R1`) và 30/30 cấu hình ViQuAD (kể cả `E2, E4`) tại `reports/phase_a_summary.json`; còn bổ sung cột khoảng tin cậy bootstrap 95% |
+| [ ] | Thứ Sáu 27/11 | 3.600 lượt sinh trên Zalo đã chạy xong hoặc đang chạy mà không có lỗi định dạng; demo thô chạy được ở phần truy xuất (chọn cấu hình, hiển thị 5 đoạn căn cứ) | | | Đã chạy xong toàn bộ 9/9 cấu hình Zalo test (`3.480/3.480` câu trả lời, do `oracle` chỉ chạy trên 280 câu trả lời được theo D5), 0 lỗi định dạng; còn dựng file demo `app.py` |
+| [x] | Thứ Bảy 28/11 | Đủ 6.400 câu trả lời, không thiếu, không trùng; có fabrication rate và false refusal sơ bộ | 23/11 | | Đã sinh đủ 100% **16/16 cấu hình Giai đoạn B** (`3.480` câu Zalo test + `2.680` câu ViQuAD test = `6.160/6.160` câu, do `oracle` ở hai bộ chỉ sinh trên `280` câu có đáp án theo D5), không thiếu, không trùng (`data/retrieval_cache/answers_{viquad,zalo}_test.jsonl`). Trên Zalo test, `C5-E3-R0 (ViStructChunk)` đạt `false_refusal = 20,71%` (thấp nhất trong mọi cấu hình RAG; `C5_nohead = 35,36%`, `C3 = 27,50%`, `C4 = 28,93%`). Trên ViQuAD test, `C3-E3-R1` đạt `false_refusal = 12,14%`, `fabrication = 30,83%`, `contains_gold = 55,36%`, `F1 = 0,4072` |
+| [x] | Chủ nhật 29/11 | Khoảng 4.480 câu trả lời cần chấm đều có điểm judge, hoặc được ghi rõ là lỗi | 23/11 | | Đã chấm xong toàn bộ **`4.480 / 4.480` câu trả lời của các câu hỏi trả lời được** (`16 cấu hình × 280 câu`: `1.960` dòng `judge_viquad_test.jsonl` + `2.520` dòng `judge_zalo_test.jsonl`) bằng `unsloth/Qwen3.5-9B-GGUF:Q4_K_M` với **`0` lỗi JSON (`n_judge_errors = 0`) và `0` câu thiếu (`n_judge_missing = 0`)** |
+| [x] | Thứ Hai 30/11 | Bảng kết quả một dòng cho mỗi cặp (cấu hình, câu hỏi) có đủ mọi chỉ số và qua được các kiểm tra hợp lý | 23/11 | | Đã xuất bảng master `data/retrieval_cache/master_phase_b_{viquad,zalo}.jsonl` (`2.680 + 3.480 = 6.160` dòng) và bảng tổng hợp `reports/phase_b_summary.json` ([chi tiết](reports/benchmark-colab-2026-11-20.md)). Qua toàn bộ kiểm tra hợp lý: `oracle` có `correctness` cao nhất (`1,7000` trên ViQuAD; `1,6214` trên Zalo), `closed_book` thấp nhất (`0,1964` và `0,1429`); trên Zalo, `C5-E3-R0` nâng `correctness` từ `0,9500` (`C5_nohead`) lên **`1,2607`** (+32,7%) và giảm `H_gold` từ `32,04%` xuống `28,83%` (`RAH: +26,59% → +22,33%`) |
 | [ ] | Thứ Ba 01/12 | Có bảng chi phí: độ trễ (trung vị, phân vị 95), kích thước chỉ mục, môi trường chạy | | | |
 | [ ] | Thứ Tư 02/12 | Không còn việc tồn của tuần 3; demo đã nối mô hình sinh và trả lời được 10 câu hỏi thử | | | |
 
 **Cổng kiểm tra cuối giai đoạn:**
 
 - [ ] Bảng Giai đoạn A đầy đủ
-- [ ] Bảng kết quả Giai đoạn B đầy đủ, qua kiểm tra hợp lý
+- [x] Bảng kết quả Giai đoạn B đầy đủ, qua kiểm tra hợp lý
 - [ ] Bảng chi phí
 - [ ] Demo chạy được từ câu hỏi đến câu trả lời kèm căn cứ
 
@@ -144,8 +144,8 @@ Dùng cùng `Kế hoạch chi tiết 30 ngày.md`. Mục tiêu từng ngày đư
 | [x] | 17/11 | Có thay câu không trả lời được không | Không thay câu; loại thêm bản trùng mã `nd-cp` ↔ `nđ-cp` trong kho thu hẹp Zalo | ViQuAD 2/30 = 6,7% (≤ 20%). Zalo 8/30 = 26,7%, trong đó 2 câu do bản trùng `24/2020/nd-cp+*`; loại bản trùng còn 6/30 = 20,0% (≤ 20%), giữ nguyên 400 câu test (chốt 18/11) |
 | [x] | 19/11 | Mô hình sinh | `Qwen/Qwen3.5-9B` (`unsloth/Qwen3.5-9B-GGUF:Q4_K_M`, tắt thinking) | Ngày 18/11 thử nghiệm ban đầu với `Qwen2.5-7B-Instruct`; ngày 20/11 chủ đề tài chốt nâng cấp lên `Qwen3.5-9B` kèm continuous batching qua `llama.cpp` |
 | [x] | 20/11 | Giữ 400 hay giảm còn 300 câu mỗi bộ | Giữ nguyên 400 câu mỗi bộ | Tốc độ sinh `C3-E3-R0` đo thật 10,5–16,3 câu/phút (55,5 câu/phút ở `closed_book`) → ước lượng ~6,5–10,2 giờ GPU cho 6.400 lượt, dưới ngưỡng 20 giờ |
-| [x] | 22/11 | Mô hình judge | `Qwen/Qwen3.5-9B` (`unsloth/Qwen3.5-9B-GGUF:Q4_K_M`, tắt thinking) | Chủ đề tài chốt dùng thống nhất `Qwen3.5-9B` cho cả sinh và judge (100% JSON hợp lệ trên 2.211/2.211 lượt chấm) |
-| [ ] | 25/11 | Tiếp tục hay chuyển phương án dự phòng | | |
+| [x] | 22/11 | Mô hình judge | `Qwen/Qwen3.5-9B` (`unsloth/Qwen3.5-9B-GGUF:Q4_K_M`, tắt thinking) | Chủ đề tài chốt dùng thống nhất `Qwen3.5-9B` cho cả sinh và judge (100% JSON hợp lệ trên 4.480/4.480 lượt chấm Giai đoạn B) |
+| [x] | 25/11 | Tiếp tục hay chuyển phương án dự phòng | Tiếp tục Giai đoạn B | Đạt đủ cả 3 cổng kiểm tra Tuần 2 (`κ(H_gold) = 0,8163 ≥ 0,60`, pipeline chạy đầu-cuối trên cả hai bộ, đóng băng thẻ `freeze-b`) và đã hoàn tất toàn bộ 16/16 cấu hình Giai đoạn B vào ngày 23/11 |
 
 ## Việc chờ người khác
 

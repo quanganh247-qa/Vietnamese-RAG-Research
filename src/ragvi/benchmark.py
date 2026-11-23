@@ -12,6 +12,11 @@ from ragvi.retrieval import load_jsonl, read_rows
 
 ANCHOR = 'C3-E3-R0'
 CONFIGS = ('closed_book', 'oracle', ANCHOR)
+PHASE_B_CONFIGS = {
+    'viquad': ('closed_book', 'oracle', 'C3-E3-R0', 'C1-E3-R0', 'C3-E0-R0', 'C3-E5-R0', 'C3-E3-R1'),
+    'zalo': ('closed_book', 'oracle', 'C3-E3-R0', 'C4-E3-R0', 'C5-E3-R0', 'C5_nohead-E3-R0',
+             'C3-E0-R0', 'C3-E5-R0', 'C3-E3-R1'),
+}
 DATASETS = ('viquad', 'zalo')
 FROZEN = ('dev', 'test')
 
@@ -72,9 +77,9 @@ def retrieval_summary(rows, questions):
     return {'n': len(own), 'n_scored': len(scored), **(mean_metrics(scored) if scored else dict.fromkeys(METRIC_KEYS))}
 
 
-def end_to_end_summary(questions, answers, judgments):
+def end_to_end_summary(questions, answers, judgments, configs=CONFIGS):
     summaries, hallucinations = {}, {}
-    for config in CONFIGS:
+    for config in configs:
         own = [a for a in answers if a['config'] == config]
         expected = {q['qid'] for q in questions if config != 'oracle' or q['answerable']}
         if len(own) != len(expected) or {a['qid'] for a in own} != expected:
@@ -92,7 +97,18 @@ def end_to_end_summary(questions, answers, judgments):
             summaries[config].update({key: mean(values.values()) if values else None, f'n_{key}': len(values)})
             if key == 'h_gold':
                 hallucinations[config] = values
-    rag, oracle = hallucinations[ANCHOR], hallucinations['oracle']
+        wa_vals = [int(bool(j['wrong_article'])) for j in valid if not j.get('refused') and 'wrong_article' in j]
+        if wa_vals:
+            summaries[config].update({'wrong_article': mean(wa_vals), 'n_wrong_article': len(wa_vals)})
+    oracle = hallucinations.get('oracle', {})
+    for config in configs:
+        if config not in ('closed_book', 'oracle') and oracle:
+            paired = hallucinations.get(config, {}).keys() & oracle.keys()
+            summaries[config]['rah_against_oracle'] = {
+                'n_pairs': len(paired),
+                'value': mean(hallucinations[config][q] - oracle[q] for q in sorted(paired)) if paired else None,
+            }
+    rag = hallucinations.get(ANCHOR, {})
     paired = rag.keys() & oracle.keys()
     return {'configs': summaries, 'rah_against_oracle': {
         'n_pairs': len(paired), 'value': mean(rag[q] - oracle[q] for q in sorted(paired)) if paired else None}}
@@ -116,10 +132,22 @@ def report(data, out):
     (out / 'summary.json').write_text(json.dumps(result, ensure_ascii=False, indent=2, allow_nan=False), encoding='utf-8')
 
 
+def report_phase_b(data, out):
+    end_to_end = {}
+    for dataset, cfgs in PHASE_B_CONFIGS.items():
+        tag = f'{dataset}_test'
+        qs = load_jsonl(data / 'eval' / dataset / 'test.jsonl')
+        end_to_end[tag] = end_to_end_summary(
+            qs, read_rows(out / f'answers_{tag}.jsonl'), read_rows(out / f'judge_{tag}.jsonl'), configs=cfgs)
+    result = {'judge_calibrated': True, 'end_to_end': end_to_end}
+    (out / 'phase_b_summary.json').write_text(
+        json.dumps(result, ensure_ascii=False, indent=2, allow_nan=False), encoding='utf-8')
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action', choices=['prepare', 'report'])
+    parser.add_argument('action', choices=['prepare', 'report', 'phase_b'])
     parser.add_argument('data', type=Path)
     parser.add_argument('out', type=Path)
     args = parser.parse_args()
-    (prepare if args.action == 'prepare' else report)(args.data, args.out)
+    {'prepare': prepare, 'report': report, 'phase_b': report_phase_b}[args.action](args.data, args.out)

@@ -90,3 +90,23 @@ def test_run_judge_and_human_sheet_and_kappa(tmp_path):
     assert res['n_shared'] == 2 and res['kappa_h_gold'] == pytest.approx(1.0)
     assert res['kappa_correctness_linear'] == pytest.approx(1.0)
     assert cohen_kappa([0, 1, 2, 0], [0, 1, 1, 0], weights='linear') > 0.5
+
+
+def test_run_judge_dedup_identical_prompts(tmp_path):
+    questions = {'q1': {'qid': 'q1', 'question': 'Mức phạt?', 'answerable': True, 'gold_doc_ids': ['doc+15']}}
+    answers = [
+        {'config': 'C3-E3-R0', 'qid': 'q1', 'answerable': True, 'answer': 'Theo Điều 15 là 200k.', 'refused': False},
+        {'config': 'C3-E3-R1', 'qid': 'q1', 'answerable': True, 'answer': 'Theo Điều 15 là 200k.', 'refused': False},
+    ]
+    out = tmp_path / 'judge_dedup.jsonl'
+    calls = []
+    def fake_judge(prompt):
+        calls.append(prompt)
+        return '{"claims": [{"text": "200k", "supported_by_context": true, "supported_by_gold": true}], "correctness": 2}'
+
+    assert run_judge(answers[:1], questions, lambda c, q: 'Điều 15: 200k', lambda q: 'Điều 15: 200k', out, fake_judge) == 1
+    assert len(calls) == 1
+    assert run_judge(answers, questions, lambda c, q: 'Điều 15: 200k', lambda q: 'Điều 15: 200k', out, fake_judge) == 1
+    assert len(calls) == 1  # C3-E3-R1 tái sử dụng kết quả chấm của C3-E3-R0 vì cùng (qid, context, gold, answer)
+    rows = read_rows(out)
+    assert len(rows) == 2 and rows[1]['config'] == 'C3-E3-R1' and rows[1]['seconds'] == 0.0
