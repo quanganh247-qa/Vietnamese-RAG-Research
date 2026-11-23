@@ -300,4 +300,53 @@ Theo kế hoạch thống kê đã đăng ký trước (D1, Ngày 15 & Ngày 22)
   - **ViQuAD test:** `closed_book` (`p50 = 0,70 s`, `p95 = 2,61 s`), `oracle` (`p50 = 2,00 s`, `p95 = 3,79 s`), `C3-E3-R0` (`p50 = 3,22 s`, `p95 = 6,75 s`), các cấu hình `C1/C3` chạy ở `16 slots` (`p50 = 5,74–6,15 s`, `p95 = 11,45–12,51 s`, thông lượng tổng toàn server đạt `~135–140 câu/phút`).
   - **Zalo Legal test:** `closed_book` (`p50 = 0,78 s`, `p95 = 3,64 s`), `oracle` (`p50 = 3,38 s`, `p95 = 7,17 s`), `C3-E3-R0` (`p50 = 4,66 s`, `p95 = 11,00 s`), **`C5-E3-R0` (`p50 = 6,04 s`, `p95 = 14,34 s` ở `16 slots` — nhanh gấp ~2× so với `C4-E3-R0` có `p50 = 11,84 s`, `p95 = 26,80 s` do `C5` chỉ đưa vào 5 khoản gọn ~91 token thay vì 5 điều luật dài tới 1.024 token!)**.
 
+---
+
+## 7. Phân tích định tính 30 trường hợp ảo giác (`H_gold = 1`) và Đối chiếu với chỉ số RAH (`reports/phieu/hallucination_30_cases.md`)
+
+Lấy mẫu ngẫu nhiên 30 câu trả lời RAG có `H_gold = 1` (`15 ViQuAD test + 15 Zalo test`, `random.Random(0)`) và gán nhãn theo 5 nhóm nguyên nhân của đề cương ([phiếu chi tiết 30 mẫu](phieu/hallucination_30_cases.md)):
+
+| Nhóm nguyên nhân | Quy cho truy xuất / phân đoạn? | ViQuAD test (`n = 15`) | Zalo Legal test (`n = 15`) | Tổng (`n = 30`) |
+|---|:---:|---:|---:|---:|
+| 1. Truy xuất sai (Top-5 không chứa tài liệu/điều luật vàng) | Có | 3 (20,0%) | 3 (20,0%) | 6 (20,0%) |
+| 2. Chunk cắt mất thông tin (Trúng tài liệu vàng nhưng thiếu chunk khoản/câu đáp án hoặc bị cắt ở 1.024 token) | Có | 1 (6,7%) | 2 (13,3%) | 3 (10,0%) |
+| 3. Nhiễu từ đoạn không liên quan (Mô hình tổng hợp thêm thông tin từ các đoạn khác trong top-5) | Có | 5 (33,3%) | 1 (6,7%) | 6 (20,0%) |
+| 4. Nhầm điều luật (Các chunk mất tiêu đề Điều hoặc cùng chủ đề làm mô hình áp nhầm mức phạt/quy định của điều khác) | Có | 0 (0,0%) | **7 (46,7%)** | 7 (23,3%) |
+| 5. Truy xuất đúng nhưng mô hình bỏ qua / suy diễn sai (Lỗi nội tại tầng sinh/judge, thường xuất hiện ở cả `oracle`) | Không | **6 (40,0%)** | 2 (13,3%) | 8 (26,7%) |
+| **Tổng tỷ lệ quy cho truy xuất / phân đoạn (Nhóm 1–4)** | **Có** | **9 / 15 (60,0%)** *(7/15 = 46,7% không có ở Oracle)* | **13 / 15 (86,7%)** | **22 / 30 (73,3%)** |
+| **Đối chiếu tỷ phần định lượng `RAH / H_gold` (Mục 5.3)** | – | **32,5% – 46,5%** *(TB: 38,3%)* | **69,5% – 83,0%** *(TB: 76,3%)* | – |
+
+- **Kiểm chứng chéo `RAH` trên Zalo Legal:** Có tới **13/15 ca (`86,7%`)** bắt nguồn từ tầng truy xuất và phân đoạn (khớp chặt với tỷ phần định lượng `RAH / H_gold = 69,5%–83,0%`). Nguyên nhân phổ biến nhất là **`4. Nhầm điều luật` (`7/15 = 46,7%`)**: trong Nghị định `100/2019/NĐ-CP`, Điều 5 (xe ô tô), Điều 6 (xe máy), Điều 7 (máy kéo) và Điều 8 (xe đạp) có cấu trúc câu quy định hành vi gần như trùng khít; khi `C3` cắt rời các khoản giữa điều luật mà không gắn tiêu đề cha, mô hình không biết đoạn đó thuộc Điều 6 hay Điều 8 nên lấy mức phạt của xe máy (`400k–600k` hoặc `6–8 triệu`) và xe đạp (`80k–100k`) trả lời cho câu hỏi về xe ô tô.
+- **Kiểm chứng chéo `RAH` trên ViQuAD:** Có **8/15 ca (`53,3%`)** cũng có `H_gold = 1` ở điều kiện `oracle` (`7/15 = 46,7%` chỉ xuất hiện ở RAG mà không có ở `oracle`), khớp hoàn toàn với tỷ phần định lượng **`RAH / H_gold = 32,5%–46,5%`**.
+
+---
+
+## 8. Ba hình biểu diễn kết quả thực nghiệm (`reports/figures/`)
+
+1. **[Hình 1 – Bảng nhiệt Giai đoạn A (`reports/figures/fig1_phase_a_heatmap.svg`)](figures/fig1_phase_a_heatmap.svg):** So sánh trực quan `nDCG@5` và `Recall@5` trên 30 cấu hình Zalo Legal và 30 cấu hình ViQuAD.
+2. **[Hình 2 – Tỷ lệ ảo giác $H_{\text{gold}}$ kèm Khoảng tin cậy 95% theo cấu hình (`reports/figures/fig2_phase_b_h_gold_ci.svg`)](figures/fig2_phase_b_h_gold_ci.svg):** So sánh $H_{\text{gold}}$ và `Correctness` trên 9 cấu hình Zalo Legal và 7 cấu hình ViQuAD.
+3. **[Hình 3 – Chỉ số RAH theo miền kèm Khoảng tin cậy 95% (`reports/figures/fig3_rah_by_domain.svg`)](figures/fig3_rah_by_domain.svg):** Minh họa sự phân tách rõ rệt của `RAH` và tỷ phần `RAH / H_gold` giữa miền Pháp luật và miền Wikipedia.
+
+![Hình 1: Bảng nhiệt Giai đoạn A](figures/fig1_phase_a_heatmap.svg)
+
+![Hình 2: Tỷ lệ ảo giác H_gold theo cấu hình](figures/fig2_phase_b_h_gold_ci.svg)
+
+![Hình 3: So sánh RAH giữa hai miền](figures/fig3_rah_by_domain.svg)
+
+---
+
+## 9. Bảng khuyến nghị cấu hình có điều kiện theo miền (`RQ5`, Ngày 23 – 04/12)
+
+Theo quy tắc đã ghi trước: chỉ ghi một cấu hình là *"tốt nhất"* khi khoảng tin cậy 95% của hiệu số ghép cặp so với cấu hình đứng thứ hai không chứa `0`; nếu khoảng tin cậy chứa `0` thì ghi rõ *"không phân biệt được ở ngưỡng 95% giữa X và Y"*. Khuyến nghị dưới đây chỉ áp dụng **trong phạm vi 9 cấu hình Zalo + 7 cấu hình ViQuAD ở Giai đoạn B (và 60 cấu hình ở Giai đoạn A) đã thử nghiệm**:
+
+| Miền | Tiêu chí | Cấu hình tốt nhất trong số đã thử | Hiệu số so với cấu hình neo `C3-E3-R0` (95% Cluster CI) | Điều kiện áp dụng & Lưu ý |
+|---|---|---|---|---|
+| **Pháp luật (Zalo Legal)** | **Ảo giác thấp nhất ($H_{\text{gold}}$)** | Không phân biệt được ở ngưỡng 95% giữa `C4-E3-R0` (`24,62%`), `C3-E3-R0` (`25,12%`), `C3-E5-R0` (`25,59%`) và `C3-E3-R1` (`25,69%`); **tránh dùng `C5_nohead-E3-R0` (`32,04%`)** | `C4-E3-R0`: `+1,16% [-4,22%, +6,11%]` trên tập câu trả lời chung (`n=172`); `C5_nohead-E3-R0`: `+6,13% [+1,77%, +12,35%]` (tệ hơn neo) | Khi cắt theo Khoản/Điểm bắt buộc phải gắn tiêu đề phân cấp cha (`C5`); bỏ tiêu đề (`C5_nohead`) làm tăng cả ảo giác lẫn từ chối sai |
+| **Pháp luật (Zalo Legal)** | **Độ đúng cao nhất (`Correctness` & Truy xuất)** | **`C5-E3-R0` (`ViStructChunk`, `1,2607/2`)** và **`C3-E3-R1` (`1,2607/2`)** *(không phân biệt được giữa `C5-E3-R0`, `C3-E3-R1`, `C3-E5-R0` ở tầng sinh `n=280`, nhưng ở tầng truy xuất `C5` vượt trội tuyệt đối: `dense[c5] − dense[c3] = +0,1052 [+0,0340, +0,1534]` nDCG@5, $p=0,0001$)* | `C5-E3-R0`: `+0,0786 [-0,0109, +0,1795]` so với neo, và **`+0,3107 [+0,2161, +0,4051]` ($p_{\text{Holm}}=0,0007$) so với `C5_nohead-E3-R0`**; giảm `false_refusal` xuống thấp nhất (**`20,71%`** vs `27,50%` của neo) | **Cấu hình mặc định khuyến nghị cho văn bản luật:** phân đoạn `C5 (ViStructChunk)` kết hợp `E3/E5` (và `R1` khi có GPU: `hybrid[c5][word]+r1` đạt `nDCG@5 = 0,8369`, `Recall@5 = 91,61%`) |
+| **Pháp luật (Zalo Legal)** | **Độ trễ thấp nhất** | **`C3-E3-R0`** (`p50 = 4,66 s`) hoặc **`C5-E3-R0`** (`p50 = 6,04 s` ở 16 slots); tránh `C4-E3-R0` (`p50 = 11,84 s`, chậm gấp ~2× do đoạn dài tới 1.024 token) | `C5-E3-R0` có chunk ngắn trung bình `91,7` token (`0% > 512`), nhúng nhanh `1.507,7` chunk/s và không cần bước reranker `R1` (`+39 ms`) mà vẫn đạt `Correctness = 1,2607` ngang `C3-E3-R1` | Khi cần phản hồi nhanh và không chạy thêm Cross-Encoder `R1` |
+| **Wikipedia (ViQuAD)** | **Ảo giác thấp nhất ($H_{\text{gold}}$)** | Không phân biệt được ở ngưỡng 95% giữa `C3-E0-R0` (`16,91%`), `C1-E3-R0` (`18,70%`), `C3-E3-R0` (`19,07%`), `C3-E3-R1` (`19,92%`) và `C3-E5-R0` (`20,58%`) | `C3-E0-R0`: `-0,51% [-4,41%, +3,69%]` (`n=196`); `C1-E3-R0`: `-0,44% [-3,54%, +2,54%]` (`n=225`) | `C3-E0-R0` có $H_{\text{gold}}$ danh nghĩa thấp nhất và `correct_refusal` cao nhất (`69,17%`) nhưng đổi lại từ chối sai nhiều (`false_refusal = 26,07%`) |
+| **Wikipedia (ViQuAD)** | **Độ đúng cao nhất (`Correctness`, `F1`, `contains_gold`)** | **`C3-E3-R1`** (`Correctness = 1,6250`, `contains_gold = 55,36%`, `F1 = 0,4072`, `false_refusal = 12,14%`) và **`C3-E5-R0`** (`F1 = 0,4073`, `Correctness = 1,5893`); **vượt trội có ý nghĩa thống kê so với `C3-E0-R0` (`BM25`)** | `C3-E3-R1`: `+0,0607 [-0,0099, +0,1274]` so với neo và **`+0,2607` so với `C3-E0-R0`** (`C3-E0-R0 vs neo = -0,2000 [-0,3064, -0,1029]`, $p_{\text{Holm}}=0,0008$) | **Cấu hình mặc định khuyến nghị cho văn bản bách khoa:** `C3` kết hợp `E3/E5 + R1` |
+| **Wikipedia (ViQuAD)** | **Độ trễ thấp nhất** | **`C3-E3-R0`** (`p50 = 3,22 s`, truy xuất `R0` không tốn `+38,2 ms` reranking) | Neo `C3-E3-R0` (`0,00`) | Khi không có ngân sách GPU cho Cross-Encoder `R1` nhưng vẫn cần độ đúng cao hơn hẳn `BM25` (`+0,2000` điểm `Correctness`) |
+| **Cả hai miền (Tầng truy xuất Giai đoạn A)** | **Mô hình nhúng tốt nhất (`E2`, `E3`, `E4`)** | Ở `R0` (không reranker): **`E4` (`intfloat/multilingual-e5-large`)** dẫn đầu trên `nDCG@5`; khi có **`R1` (`bge-reranker-v2-m3`)**: **không phân biệt được giữa `E4+R1` (`0,9131`), `E3+R1` (`0,9100`) và `E2+R1` (`0,8991`)** | Trên ViQuAD `C3` (`R0`): `E4 − E3 = +0,0333 [+0,0008, +0,0699]` nDCG@5 (không chứa 0) và `E4 − E2 = +0,0334 [+0,0063, +0,0625]`; khi thêm `R1`: `E4+R1 − E3+R1 = +0,0031 [-0,0147, +0,0225]` | Chỉ dựa trên `Recall@5` và `nDCG@5` của Giai đoạn A; nếu không dùng reranker thì ưu tiên `E4` (hoặc `E5 Hybrid`), nếu có `R1` thì `E3 (BAAI/bge-m3)` và `E4` tương đương nhau |
+
 Chỉ lưu số liệu tổng hợp lên Git; log runtime và JSONL nằm trong thư mục `results/` và `data/retrieval_cache/` được bỏ qua theo `.gitignore`.
