@@ -349,4 +349,69 @@ Theo quy tắc đã ghi trước: chỉ ghi một cấu hình là *"tốt nhất
 | **Wikipedia (ViQuAD)** | **Độ trễ thấp nhất** | **`C3-E3-R0`** (`p50 = 3,22 s`, truy xuất `R0` không tốn `+38,2 ms` reranking) | Neo `C3-E3-R0` (`0,00`) | Khi không có ngân sách GPU cho Cross-Encoder `R1` nhưng vẫn cần độ đúng cao hơn hẳn `BM25` (`+0,2000` điểm `Correctness`) |
 | **Cả hai miền (Tầng truy xuất Giai đoạn A)** | **Mô hình nhúng tốt nhất (`E2`, `E3`, `E4`)** | Ở `R0` (không reranker): **`E4` (`intfloat/multilingual-e5-large`)** dẫn đầu trên `nDCG@5`; khi có **`R1` (`bge-reranker-v2-m3`)**: **không phân biệt được giữa `E4+R1` (`0,9131`), `E3+R1` (`0,9100`) và `E2+R1` (`0,8991`)** | Trên ViQuAD `C3` (`R0`): `E4 − E3 = +0,0333 [+0,0008, +0,0699]` nDCG@5 (không chứa 0) và `E4 − E2 = +0,0334 [+0,0063, +0,0625]`; khi thêm `R1`: `E4+R1 − E3+R1 = +0,0031 [-0,0147, +0,0225]` | Chỉ dựa trên `Recall@5` và `nDCG@5` của Giai đoạn A; nếu không dùng reranker thì ưu tiên `E4` (hoặc `E5 Hybrid`), nếu có `R1` thì `E3 (BAAI/bge-m3)` và `E4` tương đương nhau |
 
-Chỉ lưu số liệu tổng hợp lên Git; log runtime và JSONL nằm trong thư mục `results/` và `data/retrieval_cache/` được bỏ qua theo `.gitignore`.
+---
+
+## 10. Kết quả Mở rộng trên Toàn bộ Dữ liệu (Full Datasets — `6.910` câu hỏi, `reports/full_phase_a_summary.json` & `reports/full_phase_b_summary.json`)
+
+Để khắc phục hạn chế cỡ mẫu (`n = 280` trả lời được) của phạm vi 30 ngày, toàn bộ thực nghiệm Giai đoạn A (`60` cấu hình) và Giai đoạn B (`18` cấu hình = `8` ViQuAD + `10` Zalo, bổ sung thêm hai cấu hình tốt nhất `C4-E5-R1` và `C5-E5-R1`) đã được chạy lại trên toàn bộ tập đánh giá đầy đủ:
+- **UIT-ViQuAD 2.0 Full (`validation`):** `3.814` câu hỏi (`2.653` có đáp án, `1.161` không có đáp án, `19` cụm bài Wikipedia, `0` trùng lặp với `dev`).
+- **Zalo Legal Full (`train_question_answer.json` trừ `dev`):** `3.096` câu hỏi (`2.167` có đáp án, `929` không có đáp án, `2.117` cụm `gold_group`, `699` điều luật bị loại, `0` trùng lặp với `dev`).
+
+### 10.1. Giai đoạn A Full (`60` cấu hình = `207.300` dòng truy xuất)
+- **UIT-ViQuAD 2.0 Full (`n = 2.653`):** Tốt nhất là **`hybrid[c4][word]+r1`** (`Recall@5 = 96,49%`, `Recall@20 = 97,63%`, `MRR@10 = 0,9102`, `nDCG@5 = 0,9233`), vượt `hybrid[c3][word]+r1` (`0,9195`, $p_{\text{Holm}} = 0,0368$). `Hybrid vs BM25 (C3)`: `+0,1253 [+0,0884, +0,1612]`, $p_{\text{Holm}} = 0,0004$; `R1 vs R0 (C3 Dense)`: `+0,1210 [+0,0998, +0,1410]`, $p_{\text{Holm}} = 0,0004$.
+- **Zalo Legal Full (`n = 2.167`):** **`ViStructChunk (c5)`** dẫn đầu tuyệt đối: **`dense[c5]+r1`** (`nDCG@5 = 0,8369`, `Recall@5 = 90,13%`) và **`hybrid[c5][word]+r1`** (`nDCG@5 = 0,8355`, **`Recall@5 = 90,50%`**, `Recall@20 = 94,34%`).
+  - **Ablation H1b (`c5` vs `c5_nohead`):**
+    - `R0 Dense`: `0,7811` vs `0,7179` (`+0,0632 [+0,0455, +0,0832]`, $p_{\text{Holm}} = 0,0007$).
+    - `R1 Dense`: `0,8369` vs `0,7429` (**`+0,0941 [+0,0739, +0,1193]`**, $p_{\text{Holm}} = 0,0007$).
+    - `R1 Hybrid`: `0,8355` vs `0,7412` (**`+0,0943 [+0,0742, +0,1186]`**, $p_{\text{Holm}} = 0,0007$).
+  - **H1 (`c5` vs `c3`):** `R0 Dense`: `+0,0606 [+0,0440, +0,0783]`, $p_{\text{Holm}} = 0,0007$; `R1 Hybrid`: `+0,0299 [+0,0131, +0,0513]`, $p_{\text{Holm}} = 0,0007$.
+
+### 10.2. Giai đoạn B Full (`18` cấu hình = `59.382` câu trả lời, `42.887` dòng Judge hợp lệ — `99,98%`)
+
+#### UIT-ViQuAD 2.0 Full (`n = 2.653` có đáp án, `21.218 / 21.224` Judge hợp lệ)
+| Cấu hình | Correctness (95% Cluster CI) | $H_{\text{gold}}$ (95% Cluster CI) | `false_refusal` | $\text{RAH}$ ghép cặp (95% CI) | $\text{RAH} / H_{\text{gold}}$ |
+|---|---:|---:|---:|---:|---:|
+| `closed_book` | `0,1870 [0,1416, 0,2407]` | `75,04% [69,62%, 79,29%]` | 74,59% | — | — |
+| `C3-E0-R0` | `1,4054 [1,2790, 1,5372]` | `17,93% [14,75%, 20,95%]` | 24,09% | `+5,77% [+3,97%, +7,41%]` | 38,6% |
+| `C1-E3-R0` | `1,4685 [1,3938, 1,5513]` | `20,11% [16,09%, 23,79%]` | 20,35% | `+7,63% [+5,12%, +9,86%]` | 45,3% |
+| `C3-E3-R0` *(neo)* | `1,4955 [1,4284, 1,5675]` | `20,68% [17,15%, 23,83%]` | 18,66% | `+7,97% [+6,01%, +9,64%]` | 46,8% |
+| `C3-E5-R0` | `1,5586 [1,4760, 1,6474]` | `21,11% [17,50%, 24,76%]` | 15,53% | `+8,85% [+6,45%, +11,43%]` | 47,9% |
+| `C3-E3-R1` | `1,5633 [1,4794, 1,6482]` | `21,84% [17,55%, 25,94%]` | 14,89% | `+9,54% [+6,69%, +12,17%]` | 49,6% |
+| **`C4-E5-R1`** | **`1,5973 [1,5099, 1,6867]`** | `22,24% [17,68%, 26,44%]` | **13,00%** | `+9,83% [+6,90%, +12,49%]` | 50,5% |
+| `oracle` | `1,6882 [1,6125, 1,7600]` | `11,01% [9,36%, 12,63%]` | 12,63% | — | — |
+
+#### Zalo Legal Full (`n = 2.167` có đáp án, `21.669 / 21.670` Judge hợp lệ)
+| Cấu hình | Correctness (95% Cluster CI) | $H_{\text{gold}}$ (95% Cluster CI) | `false_refusal` | Nhầm điều luật | $\text{RAH}$ ghép cặp (95% CI) | $\text{RAH} / H_{\text{gold}}$ |
+|---|---:|---:|---:|---:|---:|---:|
+| `closed_book` | `0,2164 [0,1919, 0,2429]` | `84,12% [81,45%, 86,47%]` | 58,14% | 17,75% | — | — |
+| `C5_nohead-E3-R0` | `1,2381 [1,1526, 1,3095]` | `22,00% [19,29%, 24,93%]` | 27,00% | 3,35% | `+18,30% [+15,65%, +21,22%]` | **90,6%** |
+| `C3-E0-R0` | `1,3069 [1,2487, 1,3653]` | `18,62% [15,91%, 21,61%]` | 26,17% | 4,81% | `+15,46% [+12,65%, +18,42%]` | **88,9%** |
+| `C3-E3-R0` *(neo)* | `1,4338 [1,3640, 1,4935]` | `17,58% [15,18%, 20,10%]` | 20,21% | 4,11% | `+13,76% [+11,30%, +16,32%]` | **88,3%** |
+| `C4-E3-R0` | `1,4476 [1,3430, 1,5336]` | `17,62% [15,15%, 20,24%]` | 20,12% | 6,35% | `+13,38% [+11,05%, +15,83%]` | **88,3%** |
+| `C5-E3-R0` | `1,4451 [1,3770, 1,5080]` | `20,43% [17,95%, 23,34%]` | 17,95% | **3,21%** | `+17,02% [+14,29%, +19,85%]` | **89,9%** |
+| `C3-E5-R0` | `1,4707 [1,4049, 1,5284]` | `17,49% [15,25%, 19,76%]` | 18,23% | 4,23% | `+14,09% [+11,77%, +16,66%]` | **88,2%** |
+| `C3-E3-R1` | `1,5242 [1,4466, 1,5877]` | `18,07% [15,56%, 20,72%]` | 15,46% | 3,77% | `+14,67% [+12,19%, +17,70%]` | **88,6%** |
+| **`C5-E5-R1`** | **`1,5265 [1,4554, 1,5881]`** | `18,57% [16,12%, 21,16%]` | **15,27%** | **3,27%** | `+15,64% [+13,33%, +18,14%]` | **88,9%** |
+| `oracle` | `1,6567 [1,6172, 1,6906]` | `2,06% [1,23%, 2,98%]` | 14,95% | 1,95% | — | — |
+
+### 10.3. Kiểm định giả thuyết có hiệu chỉnh Holm-Bonferroni (`10.000` hoán vị ghép cặp)
+- **UIT-ViQuAD 2.0 Full (`Correctness`):**
+  - `H1 (C3 vs C1)`: `+0,0264 [+0,0007, +0,0480]`, $p_{\text{Holm}} = \mathbf{0,0019}$
+  - `H2 (Dense vs BM25)`: `+0,0902 [+0,0170, +0,1622]`, $p_{\text{Holm}} = \mathbf{0,0006}$
+  - `H2 (Hybrid vs Dense)`: `+0,0630 [+0,0346, +0,0891]`, $p_{\text{Holm}} = \mathbf{0,0006}$
+  - `H3 (Rerank R1 vs R0)`: `+0,0687 [+0,0363, +0,0994]`, $p_{\text{Holm}} = \mathbf{0,0006}$
+  - `Best C4-E5-R1 vs Anchor C3-E3-R0`: **`+0,1018 [+0,0651, +0,1401]`**, $p_{\text{Holm}} = \mathbf{0,0006}$
+- **Zalo Legal Full (`Correctness`):**
+  - **`H1b (ViStructChunk C5 vs C5_nohead)`:** **`+0,2073 [+0,1693, +0,2456]`**, $p_{\text{Holm}} = \mathbf{0,0008}$
+  - `H2 (Dense vs BM25)`: `+0,1269 [+0,0877, +0,1678]`, $p_{\text{Holm}} = \mathbf{0,0008}$
+  - `H2 (Hybrid vs Dense)`: `+0,0369 [+0,0081, +0,0656]`, $p_{\text{Holm}} = \mathbf{0,0270}$
+  - `H3 (Rerank R1 vs R0)`: `+0,0904 [+0,0629, +0,1184]`, $p_{\text{Holm}} = \mathbf{0,0008}$
+  - **`Best C5-E5-R1 vs Anchor C3-E3-R0`:** **`+0,0928 [+0,0562, +0,1314]`**, $p_{\text{Holm}} = \mathbf{0,0008}$
+
+![Hình 1 Full: Bản đồ nhiệt Giai đoạn A](figures/fig1_full_phase_a_heatmap.svg)
+
+![Hình 2 Full: Độ đúng và ảo giác Giai đoạn B kèm CI 95%](figures/fig2_full_phase_b_h_gold_ci.svg)
+
+![Hình 3 Full: Phân rã RAH theo miền](figures/fig3_full_rah_by_domain.svg)
+
+Chỉ lưu số liệu tổng hợp lên Git; log runtime và JSONL nằm trong thư mục `results/` và `data/retrieval_cache*` được bỏ qua theo `.gitignore`.

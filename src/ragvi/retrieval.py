@@ -10,6 +10,7 @@ Chạy trên Colab, từ thư mục gốc của kho mã:
 """
 import argparse
 import json
+import math
 import random
 import re
 import time
@@ -109,11 +110,79 @@ def cached_tokens(doc_ids, texts, path, tokenize=tokenize_words):
     return [cache[d].split() for d in doc_ids]
 
 
-def build_bm25(texts, tokenize=tokenize_syllables):
-    """Dựng chỉ mục BM25Okapi; đổi `tokenize` thành underthesea.word_tokenize để tách từ."""
-    from rank_bm25 import BM25Okapi
+class _FastBM25Okapi:
+    """BM25Okapi dùng chỉ mục đảo nén cột (CSC) bằng NumPy thuần, khớp tuyệt đối với rank_bm25.BM25Okapi."""
 
-    return BM25Okapi([tokenize(t) for t in texts])
+    def __init__(self, corpus, k1=1.5, b=0.75, epsilon=0.25):
+        from collections import Counter
+
+        self.corpus_size = len(corpus)
+        self.k1 = k1
+        self.b = b
+        self.epsilon = epsilon
+        self.vocab = {}
+        doc_len = np.zeros(self.corpus_size, dtype=np.float64)
+        df = Counter()
+        rows, cols, tfs = [], [], []
+        for i, doc in enumerate(corpus):
+            doc_len[i] = len(doc)
+            if not doc:
+                continue
+            counts = Counter(doc)
+            for term, freq in counts.items():
+                cid = self.vocab.get(term)
+                if cid is None:
+                    cid = len(self.vocab)
+                    self.vocab[term] = cid
+                df[cid] += 1
+                rows.append(i)
+                cols.append(cid)
+                tfs.append(freq)
+        self.avgdl = float(doc_len.mean()) if self.corpus_size else 0.0
+        n_terms = len(self.vocab)
+        if n_terms == 0 or not rows:
+            self.indptr = np.zeros(n_terms + 1, dtype=np.int64)
+            self.indices = np.zeros(0, dtype=np.int32)
+            self.data = np.zeros(0, dtype=np.float64)
+            return
+        idf = np.empty(n_terms, dtype=np.float64)
+        neg_ids = []
+        idf_sum = 0.0
+        for cid, freq in df.items():
+            val = math.log(self.corpus_size - freq + 0.5) - math.log(freq + 0.5)
+            idf[cid] = val
+            idf_sum += val
+            if val < 0:
+                neg_ids.append(cid)
+        avg_idf = idf_sum / n_terms
+        if neg_ids:
+            idf[neg_ids] = epsilon * avg_idf
+        rows_arr = np.asarray(rows, dtype=np.int32)
+        cols_arr = np.asarray(cols, dtype=np.int32)
+        tfs_arr = np.asarray(tfs, dtype=np.float64)
+        denom = tfs_arr + k1 * (1.0 - b + b * doc_len[rows_arr] / self.avgdl)
+        weights = idf[cols_arr] * (tfs_arr * (k1 + 1.0) / denom)
+        order = np.argsort(cols_arr, kind='stable')
+        self.indices = rows_arr[order]
+        self.data = weights[order]
+        counts = np.bincount(cols_arr, minlength=n_terms)
+        self.indptr = np.empty(n_terms + 1, dtype=np.int64)
+        self.indptr[0] = 0
+        np.cumsum(counts, out=self.indptr[1:])
+
+    def get_scores(self, query):
+        score = np.zeros(self.corpus_size, dtype=np.float64)
+        for q in query:
+            col = self.vocab.get(q)
+            if col is not None:
+                s, e = self.indptr[col], self.indptr[col + 1]
+                score[self.indices[s:e]] += self.data[s:e]
+        return score
+
+
+def build_bm25(texts, tokenize=tokenize_syllables):
+    """Dựng chỉ mục BM25Okapi ma trận thưa; đổi `tokenize` thành underthesea.word_tokenize để tách từ."""
+    return _FastBM25Okapi([tokenize(t) for t in texts])
 
 
 def bm25_scores(index, query, tokenize=tokenize_syllables):

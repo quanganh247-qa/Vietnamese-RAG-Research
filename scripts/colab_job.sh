@@ -44,6 +44,10 @@ if [[ -d data/retrieval_cache ]]; then
   cp data/retrieval_cache/chunks/*.jsonl "$retrieval/chunks/" 2>/dev/null || true
   cp data/retrieval_cache/answers_*.jsonl data/retrieval_cache/judge_*.jsonl "$out/" 2>/dev/null || true
 fi
+if [[ -d data/retrieval_cache_full ]]; then
+  cp data/retrieval_cache_full/retrieval_*.jsonl "$retrieval/" 2>/dev/null || true
+  cp data/retrieval_cache_full/answers_*.jsonl data/retrieval_cache_full/judge_*.jsonl "$out/" 2>/dev/null || true
+fi
 if [[ $mode == benchmark ]]; then
   "${py[@]}" ragvi.benchmark prepare data "$out"
   for dataset in viquad zalo; do
@@ -107,7 +111,38 @@ elif [[ $mode == phase_a ]]; then
     cp "$retrieval/retrieval_zalo_phase_a.jsonl" "$out/"
   done
   exit 0
-elif [[ $mode == phase_b ]]; then
+elif [[ $mode == full_phase_a || $mode == full_phase_a_viquad || $mode == full_phase_a_zalo ]]; then
+  if [[ $mode == full_phase_a || $mode == full_phase_a_viquad ]]; then
+    for c in c1 c3 c4; do
+      echo "=== [Full Phase A] ViQuAD validation (3814 câu) chunking=$c ==="
+      time "${py[@]}" ragvi.retrieval "$corpus" "$retrieval" --run viquad_full_phase_a --chunking "$c" \
+        --methods bm25,dense,hybrid --tokenizer word --questions data/eval_full/viquad/test.jsonl
+      time "${py[@]}" ragvi.retrieval "$corpus" "$retrieval" --run viquad_full_phase_a --chunking "$c" \
+        --methods dense --model AITeamVN/Vietnamese_Embedding_v2 --questions data/eval_full/viquad/test.jsonl
+      time "${py[@]}" ragvi.retrieval "$corpus" "$retrieval" --run viquad_full_phase_a --chunking "$c" \
+        --methods dense --model intfloat/multilingual-e5-large --questions data/eval_full/viquad/test.jsonl
+      time "${py[@]}" ragvi.rerank "$retrieval/retrieval_viquad_full_phase_a.jsonl" data/eval_full/viquad/test.jsonl \
+        "$retrieval/chunks/viquad__${c}.jsonl" "$retrieval/retrieval_viquad_full_phase_a.jsonl" \
+        --method "bm25[${c}][word],dense[${c}],hybrid[${c}][word],dense[${c}][AITeamVN/Vietnamese_Embedding_v2],dense[${c}][intfloat/multilingual-e5-large]"
+      cp "$retrieval/retrieval_viquad_full_phase_a.jsonl" "$out/"
+    done
+  fi
+
+  if [[ $mode == full_phase_a || $mode == full_phase_a_zalo ]]; then
+    for c in c1 c3 c4 c5 c5_nohead; do
+      echo "=== [Full Phase A] Zalo full (3096 câu) chunking=$c ==="
+      time "${py[@]}" ragvi.retrieval data/processed/zalo_legal "$retrieval" --run zalo_full_phase_a --chunking "$c" \
+        --methods bm25,dense,hybrid --tokenizer word --questions data/eval_full/zalo/test.jsonl \
+        --removed data/eval_full/zalo/removed_doc_ids.json
+      time "${py[@]}" ragvi.rerank "$retrieval/retrieval_zalo_full_phase_a.jsonl" data/eval_full/zalo/test.jsonl \
+        "$retrieval/chunks/zalo_legal__${c}.jsonl" "$retrieval/retrieval_zalo_full_phase_a.jsonl" \
+        --method "bm25[${c}][word],dense[${c}],hybrid[${c}][word]"
+      rm -f "$retrieval/embeddings/zalo_legal__${c}__"*.npy
+      cp "$retrieval/retrieval_zalo_full_phase_a.jsonl" "$out/"
+    done
+  fi
+  exit 0
+elif [[ $mode == phase_b || $mode == full_viquad_b_gen || $mode == full_viquad_b_judge || $mode == full_zalo_b_gen || $mode == full_zalo_b_judge ]]; then
   :
 else
 # Pilot cố định: 5 câu có và 5 câu không có đáp án; oracle chỉ chạy nhóm có đáp án (D5).
@@ -163,7 +198,8 @@ start_server() {
   shift 5
   LD_LIBRARY_PATH=/content/llama.cpp/build/bin:${LD_LIBRARY_PATH:-} \
     /content/llama.cpp/build/bin/llama-server --host 127.0.0.1 --port 18080 --device CUDA0 --n-gpu-layers 99 \
-    --flash-attn on --ctx-size "$ctx" --parallel "$slots" --cont-batching --batch-size 2048 --ubatch-size 1024 \
+    --flash-attn on --cache-type-k q8_0 --cache-type-v q8_0 \
+    --ctx-size "$ctx" --parallel "$slots" --cont-batching --batch-size 4096 --ubatch-size 1024 \
     --alias "$alias" --model "$gguf" "$@" > "$log" 2>&1 &
   server=$!
   trap 'kill "$server" 2>/dev/null || true' EXIT
@@ -179,8 +215,14 @@ start_server() {
 
 vram_mib=$(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits | head -n1 | tr -d ' ')
 slots=4
-if [[ "${vram_mib:-0}" -ge 35000 ]]; then slots=12; elif [[ "${vram_mib:-0}" -ge 20000 ]]; then slots=8; fi
-ctx=$((12288 * slots))
+slot_ctx=12288
+if [[ $mode == full_viquad_b_gen || $mode == full_zalo_b_gen ]]; then
+  slot_ctx=8192
+  if [[ "${vram_mib:-0}" -ge 35000 ]]; then slots=24; elif [[ "${vram_mib:-0}" -ge 20000 ]]; then slots=16; fi
+else
+  if [[ "${vram_mib:-0}" -ge 35000 ]]; then slots=20; elif [[ "${vram_mib:-0}" -ge 20000 ]]; then slots=16; fi
+fi
+ctx=$((slot_ctx * slots))
 start_server "$model_alias" "$model_gguf" "$ctx" "$slots" "$out/llama-server.log" \
   --jinja --chat-template-kwargs '{"enable_thinking":false}'
 model=(--llama-url "$base" --model "$model_alias" --workers "$slots")
@@ -190,6 +232,38 @@ if [[ $mode == rag ]]; then
   "${run[@]}" "$out/oracle_questions.jsonl" "$corpus" "$out/answers.jsonl" --config oracle "${model[@]}"
   "${run[@]}" "$out/questions.jsonl" "$retrieval/chunks/viquad__c3.jsonl" "$out/answers.jsonl" \
     --config C3-E3-R0 --retrieval "$out/retrieval.jsonl" --method 'dense[c3]' "${model[@]}"
+  exit 0
+elif [[ $mode == full_viquad_b_gen ]]; then
+  echo "=== [Full Phase B Gen] ViQuAD validation (3814 câu, 8 cấu hình, slots=$slots) ==="
+  time "${run[@]}" data/eval_full/viquad/test.jsonl "$corpus" "$out/answers_viquad_full_test.jsonl" \
+    --config closed_book "${model[@]}"
+  time "${run[@]}" data/eval_full/viquad/test_oracle.jsonl "$corpus" "$out/answers_viquad_full_test.jsonl" \
+    --config oracle "${model[@]}"
+  time "${run[@]}" data/eval_full/viquad/test.jsonl "$corpus" "$out/answers_viquad_full_test.jsonl" \
+    --config 'C3-E3-R0,C1-E3-R0,C3-E0-R0,C3-E5-R0,C3-E3-R1,C4-E5-R1' \
+    --retrieval "$retrieval/retrieval_viquad_full_phase_a.jsonl" \
+    --method 'dense[c3],dense[c1],bm25[c3][word],hybrid[c3][word],dense[c3]+r1,hybrid[c4][word]+r1' "${model[@]}"
+  exit 0
+elif [[ $mode == full_viquad_b_judge ]]; then
+  echo "=== [Full Phase B Judge] ViQuAD validation (2653 câu có đáp án x 8 cấu hình, slots=$slots) ==="
+  time "${py[@]}" ragvi.judge "$out/answers_viquad_full_test.jsonl" data/eval_full/viquad/test.jsonl \
+    "$corpus" "$out/judge_viquad_full_test.jsonl" "${model[@]}"
+  exit 0
+elif [[ $mode == full_zalo_b_gen ]]; then
+  echo "=== [Full Phase B Gen] Zalo full (3096 câu, 10 cấu hình, slots=$slots) ==="
+  time "${run[@]}" data/eval_full/zalo/test.jsonl data/processed/zalo_legal "$out/answers_zalo_full_test.jsonl" \
+    --config closed_book "${model[@]}"
+  time "${run[@]}" data/eval_full/zalo/test_oracle.jsonl data/processed/zalo_legal "$out/answers_zalo_full_test.jsonl" \
+    --config oracle "${model[@]}"
+  time "${run[@]}" data/eval_full/zalo/test.jsonl data/processed/zalo_legal "$out/answers_zalo_full_test.jsonl" \
+    --config 'C3-E3-R0,C4-E3-R0,C5-E3-R0,C5_nohead-E3-R0,C3-E0-R0,C3-E5-R0,C3-E3-R1,C5-E5-R1' \
+    --retrieval "$retrieval/retrieval_zalo_full_phase_a.jsonl" \
+    --method 'dense[c3],dense[c4],dense[c5],dense[c5_nohead],bm25[c3][word],hybrid[c3][word],dense[c3]+r1,hybrid[c5][word]+r1' "${model[@]}"
+  exit 0
+elif [[ $mode == full_zalo_b_judge ]]; then
+  echo "=== [Full Phase B Judge] Zalo full (2167 câu có đáp án x 10 cấu hình, slots=$slots) ==="
+  time "${py[@]}" ragvi.judge "$out/answers_zalo_full_test.jsonl" data/eval_full/zalo/test.jsonl \
+    data/processed/zalo_legal "$out/judge_zalo_full_test.jsonl" "${model[@]}"
   exit 0
 elif [[ $mode == phase_b ]]; then
   echo "=== [Phase B] Sinh câu trả lời ViQuAD test (4 cấu hình mới, parallel slots=$slots) ==="

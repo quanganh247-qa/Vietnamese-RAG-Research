@@ -175,51 +175,91 @@ def run_judge(answer_rows, questions_by_qid, context_of, gold_of, out_path, judg
                 gold=_gold(qid), answer=arow.get('answer', ''))
             prompt_cache[p] = {'claims': r['claims'], 'correctness': r['correctness']}
 
-    def _one(row):
+    def _make_row(row, parsed, elapsed=0.0, raw=None, error=None):
+        config, qid = row['config'], row['qid']
+        q = questions_by_qid[qid]
+        is_cb = config == 'closed_book'
+        cite = wrong_article_citation(row.get('answer', ''), q.get('gold_doc_ids')) if 'gold_doc_ids' in q else {}
+        if error is not None:
+            return {'config': config, 'qid': qid, 'judge_model': model_name, 'refused': False,
+                    'claims': None, 'correctness': None, 'h_gold': None, 'h_ctx': None, 'n_claims': None,
+                    **cite, 'seconds': elapsed, 'raw': raw, 'error': error}
+        scores = derive_judge_metrics(parsed, False, is_closed_book=is_cb)
+        return {'config': config, 'qid': qid, 'judge_model': model_name, 'refused': False,
+                'claims': parsed['claims'], **scores, **cite, 'seconds': elapsed, 'error': None}
+
+    immediate = []
+    prompt_groups = {}
+    for row in pending:
         config, qid = row['config'], row['qid']
         q = questions_by_qid[qid]
         refused = bool(row.get('refused') or is_refusal(row.get('answer', '')))
-        is_cb = config == 'closed_book'
-        cite = wrong_article_citation(row.get('answer', ''), q.get('gold_doc_ids')) if 'gold_doc_ids' in q else {}
         if refused:
+            is_cb = config == 'closed_book'
+            cite = wrong_article_citation(row.get('answer', ''), q.get('gold_doc_ids')) if 'gold_doc_ids' in q else {}
             scores = derive_judge_metrics({'claims': [], 'correctness': 0}, True, is_closed_book=is_cb)
-            return {'config': config, 'qid': qid, 'judge_model': model_name, 'refused': True,
-                    'claims': [], **scores, **cite, 'error': None}
+            immediate.append({'config': config, 'qid': qid, 'judge_model': model_name, 'refused': True,
+                              'claims': [], **scores, **cite, 'error': None})
+            continue
         prompt = PROMPT_JUDGE.format(
             question=q['question'], context=_ctx(config, qid), gold=_gold(qid), answer=row.get('answer', ''))
         cached = prompt_cache.get(prompt)
         if cached is not None:
-            scores = derive_judge_metrics(cached, False, is_closed_book=is_cb)
-            return {'config': config, 'qid': qid, 'judge_model': model_name, 'refused': False,
-                    'claims': cached['claims'], **scores, **cite, 'seconds': 0.0, 'error': None}
+            immediate.append(_make_row(row, cached, elapsed=0.0))
+        else:
+            prompt_groups.setdefault(prompt, []).append(row)
+
+    # Sắp xếp các prompt duy nhất theo (qid, độ dài) để tối đa hoá LCP KV-prefix cache của llama-server.
+    unique_jobs = sorted(prompt_groups.items(), key=lambda kv: (kv[1][0]['qid'], len(kv[0])))
+
+    def _eval_unique(item):
+        prompt, rows = item
         t0 = time.perf_counter()
         raw = judge_fn(prompt)
         elapsed = round(time.perf_counter() - t0, 3)
         try:
             parsed = parse_judge_json(raw)
-            prompt_cache[prompt] = {'claims': parsed['claims'], 'correctness': parsed['correctness']}
-            scores = derive_judge_metrics(parsed, False, is_closed_book=is_cb)
-            return {'config': config, 'qid': qid, 'judge_model': model_name, 'refused': False,
-                    'claims': parsed['claims'], **scores, **cite, 'seconds': elapsed, 'error': None}
+            return rows, parsed, elapsed, None, None
         except (ValueError, json.JSONDecodeError) as e:
-            return {'config': config, 'qid': qid, 'judge_model': model_name, 'refused': False,
-                    'claims': None, 'correctness': None, 'h_gold': None, 'h_ctx': None, 'n_claims': None,
-                    **cite, 'seconds': elapsed, 'raw': raw, 'error': str(e)}
+            return rows, None, elapsed, raw, str(e)
 
     written = 0
+    done_unique = 0
+    total_unique = len(unique_jobs)
+    t_start = time.perf_counter()
     with open_append(out_path) as f:
-        if workers and workers > 1:
-            with ThreadPoolExecutor(max_workers=workers) as ex:
-                for out_row in ex.map(_one, pending):
-                    f.write(json.dumps(out_row, ensure_ascii=False) + '\n')
+        for out_row in immediate:
+            f.write(json.dumps(out_row, ensure_ascii=False) + '\n')
+            written += 1
+        if immediate:
+            f.flush()
+        if unique_jobs:
+            if workers and workers > 1:
+                with ThreadPoolExecutor(max_workers=workers) as ex:
+                    for rows, parsed, elapsed, raw, err in ex.map(_eval_unique, unique_jobs):
+                        for i, row in enumerate(rows):
+                            out_row = _make_row(row, parsed, elapsed if i == 0 else 0.0, raw, err)
+                            f.write(json.dumps(out_row, ensure_ascii=False) + '\n')
+                            written += 1
+                        f.flush()
+                        done_unique += 1
+                        if done_unique % 500 == 0 or done_unique == total_unique:
+                            dt = time.perf_counter() - t_start
+                            print(f'[Judge {done_unique}/{total_unique} unique | {written}/{len(pending)} rows | '
+                                  f'{dt:.1f}s | {written / max(dt / 60, 1e-6):.1f} rows/min]', flush=True)
+            else:
+                for item in unique_jobs:
+                    rows, parsed, elapsed, raw, err = _eval_unique(item)
+                    for i, row in enumerate(rows):
+                        out_row = _make_row(row, parsed, elapsed if i == 0 else 0.0, raw, err)
+                        f.write(json.dumps(out_row, ensure_ascii=False) + '\n')
+                        written += 1
                     f.flush()
-                    written += 1
-        else:
-            for row in pending:
-                out_row = _one(row)
-                f.write(json.dumps(out_row, ensure_ascii=False) + '\n')
-                f.flush()
-                written += 1
+                    done_unique += 1
+                    if done_unique % 500 == 0 or done_unique == total_unique:
+                        dt = time.perf_counter() - t_start
+                        print(f'[Judge {done_unique}/{total_unique} unique | {written}/{len(pending)} rows | '
+                              f'{dt:.1f}s | {written / max(dt / 60, 1e-6):.1f} rows/min]', flush=True)
     return written
 
 

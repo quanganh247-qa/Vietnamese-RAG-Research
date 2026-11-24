@@ -1,0 +1,155 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="620" viewBox="0 0 1080 620" font-family="Inter, -apple-system, BlinkMacSystemFont, sans-serif">
+<rect width="1080" height="620" fill="#ffffff"/>
+<text x="540" y="34" text-anchor="middle" font-size="18" font-weight="700" fill="#111827">Hình 1: Bản đồ nhiệt nDCG@5 Giai đoạn A trên Toàn bộ dữ liệu (60 cấu hình)</text>
+<text x="540" y="55" text-anchor="middle" font-size="12" fill="#4b5563">UIT-ViQuAD 2.0 Validation (n = 2.653 câu có đáp án) &amp; Zalo Legal Full (n = 2.167 câu có đáp án)</text>
+<text x="275" y="88" text-anchor="middle" font-size="14" font-weight="700" fill="#1e3a8a">UIT-ViQuAD 2.0 Full (30 cấu hình)</text>
+<text x="201.0" y="106" text-anchor="middle" font-size="12" font-weight="600" fill="#374151">C1 Fixed</text>
+<text x="293.0" y="106" text-anchor="middle" font-size="12" font-weight="600" fill="#374151">C3 Sent</text>
+<text x="385.0" y="106" text-anchor="middle" font-size="12" font-weight="600" fill="#374151">C4 Para</text>
+<text x="147" y="140" text-anchor="end" font-size="11.5" fill="#374151">BM25 (R0)</text>
+<rect x="155" y="114" width="90" height="40" rx="4" fill="rgb(239,245,251)"/>
+<text x="200.0" y="139" text-anchor="middle" font-size="12" font-weight="600" fill="#1f2937">0.7265</text>
+<rect x="247" y="114" width="90" height="40" rx="4" fill="rgb(236,243,250)"/>
+<text x="292.0" y="139" text-anchor="middle" font-size="12" font-weight="600" fill="#1f2937">0.7292</text>
+<rect x="339" y="114" width="90" height="40" rx="4" fill="rgb(224,235,245)"/>
+<text x="384.0" y="139" text-anchor="middle" font-size="12" font-weight="600" fill="#1f2937">0.7396</text>
+<text x="147" y="182" text-anchor="end" font-size="11.5" fill="#374151">BM25 + R1</text>
+<rect x="155" y="156" width="90" height="40" rx="4" fill="rgb(86,136,188)"/>
+<text x="200.0" y="181" text-anchor="middle" font-size="12" font-weight="600" fill="#ffffff">0.8612</text>
+<rect x="247" y="156" width="90" height="40" rx="4" fill="rgb(82,133,186)"/>
+<text x="292.0" y="181" text-anchor="middle" font-size="12" font-weight="600" fill="#ffffff">0.8649</text>
+<rect x="339" y="156" width="90" height="40" rx="4" fill="rgb(79,131,185)"/>
+<text x="384.0" y="181" text-anchor="middle" font-size="12" font-weight="600" fill="#ffffff">0.8675</text>
+<text x="147" y="224" text-anchor="end" font-size="11.5" fill="#374151">E2 VN-v2 (R0)</text>
+<rect x="155" y="198" width="90" height="40" rx="4" fill="rgb(175,200,225)"/>
+<text x="200.0" y="223" text-anchor="middle" font-size="12" font-weight="600" fill="#1f2937">0.7825</text>
+<rect x="247" y="198" width="90" height="40" rx="4" fill="rgb(162,191,220)"/>
+<text x="292.0" y="223" text-anchor="middle" font-size="12" font-weight="600" fill="#1f2937">0.7939</text>
+<rect x="339" y="198" width="90" height="40" rx="4" fill="rgb(165,193,221)"/>
+<text x="384.0" y="223" text-anchor="middle" font-size="12" font-weight="600" fill="#1f2937">0.7912</text>
+<text x="147" y="266" text-anchor="end" font-size="11.5" fill="#374151">E2 VN-v2 + R1</text>
+<rect x="155" y="240" width="90" height="40" rx="4" fill="rgb(40,104,169)"/>
+<text x="200.0" y="265" text-anchor="middle" font-size="12" font-weight="600" fill="#ffffff">0.9012</text>
+<rect x="247" y="240" width="90" height="40" rx="4" fill="rgb(32,98,166)"/>
+<text x="292.0" y="265" text-anchor="middle" font-size="12" font-weight="600" fill="#ffffff">0.9081</text>
+<rect x="339" y="240" width="90" height="40" rx="4" fill="rgb(29,96,164)"/>
+<text x="384.0" y="265" text-anchor="middle" font-size="12" font-weight="600" fill="#ffffff">0.9109</text>
+<text x="147" y="308" text-anchor="end" font-size="11.5" fill="#374151">E3 bge-m3 (R0)</text>
+<rect x="155" y="282" width="90" height="40" rx="4" fill="rgb(199,217,235)"/>
+<text x="200.0" y="307" text-anchor="middle" font-size="12" font-weight="600" fill="#1f2937">0.7619</text>
+<rect x="247" y="282" width="90" height="40" rx="4" fill="rgb(185,207,229)"/>
+<text x="292.0" y="307" text-anchor="middle" font-size="12" font-weight="600" fill="#1f2937">0.7742</text>
+<rect x="339" y="282" width="90" height="40" rx="4" fill="rgb(181,204,227)"/>
+<text x="384.0" y="307" text-anchor="middle" font-size="12" font-weight="600" fill="#1f2937">0.7774</text>
+<text x="147" y="350" text-anchor="end" font-size="11.5" fill="#374151">E3 bge-m3 + R1</text>
+<rect x="155" y="324" width="90" height="40" rx="4" fill="rgb(57,116,176)"/>
+<text x="200.0" y="349" text-anchor="middle" font-size="12" font-weight="600" fill="#ffffff">0.8866</text>
+<rect x="247" y="324" width="90" height="40" rx="4" fill="rgb(47,109,172)"/>
+<text x="292.0" y="349" text-anchor="middle" font-size="12" font-weight="600" fill="#ffffff">0.8952</text>
+<rect x="339" y="324" width="90" height="40" rx="4" fill="rgb(47,109,172)"/>
+<text x="384.0" y="349" text-anchor="middle" font-size="12" font-weight="600" fill="#ffffff">0.8950</text>
+<text x="147" y="392" text-anchor="end" font-size="11.5" fill="#374151">E4 mE5 (R0)</text>
+<rect x="155" y="366" width="90" height="40" rx="4" fill="rgb(151,182,215)"/>
+<text x="200.0" y="391" text-anchor="middle" font-size="12" font-weight="600" fill="#1f2937">0.8043</text>
+<rect x="247" y="366" width="90" height="40" rx="4" fill="rgb(142,176,211)"/>
+<text x="292.0" y="391" text-anchor="middle" font-size="12" font-weight="600" fill="#1f2937">0.8117</text>
+<rect x="339" y="366" width="90" height="40" rx="4" fill="rgb(138,173,210)"/>
+<text x="384.0" y="391" text-anchor="middle" font-size="12" font-weight="600" fill="#1f2937">0.8152</text>
+<text x="147" y="434" text-anchor="end" font-size="11.5" fill="#374151">E4 mE5 + R1</text>
+<rect x="155" y="408" width="90" height="40" rx="4" fill="rgb(41,105,170)"/>
+<text x="200.0" y="433" text-anchor="middle" font-size="12" font-weight="600" fill="#ffffff">0.9002</text>
+<rect x="247" y="408" width="90" height="40" rx="4" fill="rgb(33,98,166)"/>
+<text x="292.0" y="433" text-anchor="middle" font-size="12" font-weight="600" fill="#ffffff">0.9078</text>
+<rect x="339" y="408" width="90" height="40" rx="4" fill="rgb(31,97,165)"/>
+<text x="384.0" y="433" text-anchor="middle" font-size="12" font-weight="600" fill="#ffffff">0.9093</text>
+<text x="147" y="476" text-anchor="end" font-size="11.5" fill="#374151">Hybrid (R0)</text>
+<rect x="155" y="450" width="90" height="40" rx="4" fill="rgb(100,146,194)"/>
+<text x="200.0" y="475" text-anchor="middle" font-size="12" font-weight="600" fill="#ffffff">0.8487</text>
+<rect x="247" y="450" width="90" height="40" rx="4" fill="rgb(93,142,191)"/>
+<text x="292.0" y="475" text-anchor="middle" font-size="12" font-weight="600" fill="#ffffff">0.8545</text>
+<rect x="339" y="450" width="90" height="40" rx="4" fill="rgb(91,140,190)"/>
+<text x="384.0" y="475" text-anchor="middle" font-size="12" font-weight="600" fill="#ffffff">0.8567</text>
+<text x="147" y="518" text-anchor="end" font-size="11.5" fill="#374151">Hybrid + R1</text>
+<rect x="155" y="492" width="90" height="40" rx="4" fill="rgb(25,93,163)"/>
+<text x="200.0" y="517" text-anchor="middle" font-size="12" font-weight="600" fill="#ffffff">0.9145</text>
+<rect x="247" y="492" width="90" height="40" rx="4" fill="rgb(20,89,160)"/>
+<text x="292.0" y="517" text-anchor="middle" font-size="12" font-weight="600" fill="#ffffff">0.9195</text>
+<rect x="339" y="492" width="90" height="40" rx="4" fill="rgb(15,86,159)"/>
+<text x="384.0" y="517" text-anchor="middle" font-size="12" font-weight="600" fill="#ffffff">0.9233</text>
+<text x="790" y="88" text-anchor="middle" font-size="14" font-weight="700" fill="#1e3a8a">Zalo Legal Full (30 cấu hình)</text>
+<text x="631.0" y="106" text-anchor="middle" font-size="11.5" font-weight="600" fill="#374151">C1</text>
+<text x="723.0" y="106" text-anchor="middle" font-size="11.5" font-weight="600" fill="#374151">C3</text>
+<text x="815.0" y="106" text-anchor="middle" font-size="11.5" font-weight="600" fill="#374151">C4</text>
+<text x="907.0" y="106" text-anchor="middle" font-size="11.5" font-weight="600" fill="#374151">C5 (ViStruct)</text>
+<text x="999.0" y="106" text-anchor="middle" font-size="11.5" font-weight="600" fill="#374151">C5 nohead</text>
+<text x="577" y="145" text-anchor="end" font-size="11.5" fill="#374151">BM25 (R0)</text>
+<rect x="585" y="114" width="90" height="52" rx="4" fill="rgb(214,227,241)"/>
+<text x="630.0" y="145" text-anchor="middle" font-size="12" font-weight="600" fill="#1f2937">0.6331</text>
+<rect x="677" y="114" width="90" height="52" rx="4" fill="rgb(219,231,243)"/>
+<text x="722.0" y="145" text-anchor="middle" font-size="12" font-weight="600" fill="#1f2937">0.6278</text>
+<rect x="769" y="114" width="90" height="52" rx="4" fill="rgb(235,243,250)"/>
+<text x="814.0" y="145" text-anchor="middle" font-size="12" font-weight="600" fill="#1f2937">0.6113</text>
+<rect x="861" y="114" width="90" height="52" rx="4" fill="rgb(169,196,223)"/>
+<text x="906.0" y="145" text-anchor="middle" font-size="12" font-weight="600" fill="#1f2937">0.6773</text>
+<rect x="953" y="114" width="90" height="52" rx="4" fill="rgb(210,225,240)"/>
+<text x="998.0" y="145" text-anchor="middle" font-size="12" font-weight="600" fill="#1f2937">0.6362</text>
+<text x="577" y="199" text-anchor="end" font-size="11.5" fill="#374151">BM25 + R1</text>
+<rect x="585" y="168" width="90" height="52" rx="4" fill="rgb(86,136,188)"/>
+<text x="630.0" y="199" text-anchor="middle" font-size="12" font-weight="600" fill="#ffffff">0.7615</text>
+<rect x="677" y="168" width="90" height="52" rx="4" fill="rgb(88,138,189)"/>
+<text x="722.0" y="199" text-anchor="middle" font-size="12" font-weight="600" fill="#ffffff">0.7594</text>
+<rect x="769" y="168" width="90" height="52" rx="4" fill="rgb(111,154,199)"/>
+<text x="814.0" y="199" text-anchor="middle" font-size="12" font-weight="600" fill="#1f2937">0.7357</text>
+<rect x="861" y="168" width="90" height="52" rx="4" fill="rgb(61,119,178)"/>
+<text x="906.0" y="199" text-anchor="middle" font-size="12" font-weight="600" fill="#ffffff">0.7861</text>
+<rect x="953" y="168" width="90" height="52" rx="4" fill="rgb(142,176,211)"/>
+<text x="998.0" y="199" text-anchor="middle" font-size="12" font-weight="600" fill="#1f2937">0.7051</text>
+<text x="577" y="253" text-anchor="end" font-size="11.5" fill="#374151">E3 bge-m3 (R0)</text>
+<rect x="585" y="222" width="90" height="52" rx="4" fill="rgb(128,167,206)"/>
+<text x="630.0" y="253" text-anchor="middle" font-size="12" font-weight="600" fill="#1f2937">0.7186</text>
+<rect x="677" y="222" width="90" height="52" rx="4" fill="rgb(127,165,205)"/>
+<text x="722.0" y="253" text-anchor="middle" font-size="12" font-weight="600" fill="#1f2937">0.7204</text>
+<rect x="769" y="222" width="90" height="52" rx="4" fill="rgb(152,184,216)"/>
+<text x="814.0" y="253" text-anchor="middle" font-size="12" font-weight="600" fill="#1f2937">0.6945</text>
+<rect x="861" y="222" width="90" height="52" rx="4" fill="rgb(66,122,180)"/>
+<text x="906.0" y="253" text-anchor="middle" font-size="12" font-weight="600" fill="#ffffff">0.7811</text>
+<rect x="953" y="222" width="90" height="52" rx="4" fill="rgb(129,167,206)"/>
+<text x="998.0" y="253" text-anchor="middle" font-size="12" font-weight="600" fill="#1f2937">0.7179</text>
+<text x="577" y="307" text-anchor="end" font-size="11.5" fill="#374151">E3 bge-m3 + R1</text>
+<rect x="585" y="276" width="90" height="52" rx="4" fill="rgb(40,104,169)"/>
+<text x="630.0" y="307" text-anchor="middle" font-size="12" font-weight="600" fill="#ffffff">0.8073</text>
+<rect x="677" y="276" width="90" height="52" rx="4" fill="rgb(49,110,173)"/>
+<text x="722.0" y="307" text-anchor="middle" font-size="12" font-weight="600" fill="#ffffff">0.7984</text>
+<rect x="769" y="276" width="90" height="52" rx="4" fill="rgb(76,130,184)"/>
+<text x="814.0" y="307" text-anchor="middle" font-size="12" font-weight="600" fill="#ffffff">0.7708</text>
+<rect x="861" y="276" width="90" height="52" rx="4" fill="rgb(11,83,157)"/>
+<text x="906.0" y="307" text-anchor="middle" font-size="12" font-weight="600" fill="#ffffff">0.8369</text>
+<rect x="953" y="276" width="90" height="52" rx="4" fill="rgb(104,149,196)"/>
+<text x="998.0" y="307" text-anchor="middle" font-size="12" font-weight="600" fill="#ffffff">0.7429</text>
+<text x="577" y="361" text-anchor="end" font-size="11.5" fill="#374151">Hybrid (R0)</text>
+<rect x="585" y="330" width="90" height="52" rx="4" fill="rgb(90,139,190)"/>
+<text x="630.0" y="361" text-anchor="middle" font-size="12" font-weight="600" fill="#ffffff">0.7567</text>
+<rect x="677" y="330" width="90" height="52" rx="4" fill="rgb(92,140,190)"/>
+<text x="722.0" y="361" text-anchor="middle" font-size="12" font-weight="600" fill="#ffffff">0.7555</text>
+<rect x="769" y="330" width="90" height="52" rx="4" fill="rgb(101,147,194)"/>
+<text x="814.0" y="361" text-anchor="middle" font-size="12" font-weight="600" fill="#ffffff">0.7463</text>
+<rect x="861" y="330" width="90" height="52" rx="4" fill="rgb(40,104,169)"/>
+<text x="906.0" y="361" text-anchor="middle" font-size="12" font-weight="600" fill="#ffffff">0.8070</text>
+<rect x="953" y="330" width="90" height="52" rx="4" fill="rgb(98,145,193)"/>
+<text x="998.0" y="361" text-anchor="middle" font-size="12" font-weight="600" fill="#ffffff">0.7489</text>
+<text x="577" y="415" text-anchor="end" font-size="11.5" fill="#374151">Hybrid + R1</text>
+<rect x="585" y="384" width="90" height="52" rx="4" fill="rgb(36,101,167)"/>
+<text x="630.0" y="415" text-anchor="middle" font-size="12" font-weight="600" fill="#ffffff">0.8113</text>
+<rect x="677" y="384" width="90" height="52" rx="4" fill="rgb(42,105,170)"/>
+<text x="722.0" y="415" text-anchor="middle" font-size="12" font-weight="600" fill="#ffffff">0.8056</text>
+<rect x="769" y="384" width="90" height="52" rx="4" fill="rgb(72,126,182)"/>
+<text x="814.0" y="415" text-anchor="middle" font-size="12" font-weight="600" fill="#ffffff">0.7752</text>
+<rect x="861" y="384" width="90" height="52" rx="4" fill="rgb(12,84,157)"/>
+<text x="906.0" y="415" text-anchor="middle" font-size="12" font-weight="600" fill="#ffffff">0.8355</text>
+<rect x="953" y="384" width="90" height="52" rx="4" fill="rgb(106,150,196)"/>
+<text x="998.0" y="415" text-anchor="middle" font-size="12" font-weight="600" fill="#ffffff">0.7412</text>
+<rect x="585" y="458" width="460" height="76" rx="8" fill="#eff6ff" stroke="#93c5fd"/>
+<text x="600" y="482" font-size="12" font-weight="700" fill="#1e40af">Điểm nhấn Ablation ViStructChunk (Zalo Full, n = 2.167):</text>
+<text x="600" y="502" font-size="11.5" fill="#1e3a8a">• C5 (có tiêu đề phân cấp) đạt đỉnh nDCG@5 = 0.8369 (Recall@5 = 90.50%).</text>
+<text x="600" y="520" font-size="11.5" fill="#1e3a8a">• Bỏ tiêu đề (C5_nohead) tụt mạnh −0.0940 nDCG@5 (p_Holm &lt; 0.001).</text>
+</svg>

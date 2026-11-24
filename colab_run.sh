@@ -6,9 +6,9 @@ cd "$(dirname "$0")"
 mode=${1:-rag}
 if [[ -n "${2:-}" ]]; then RAGVI_DRIVE_URL="$2"; fi
 case "$mode" in
-  -h|--help) echo 'Cách dùng: bash colab_run.sh [rag|benchmark|phase_a|phase_b|eda]'; exit 0 ;;
-  rag|benchmark|phase_a|phase_b|eda) ;;
-  *) echo 'Chọn rag (mặc định), benchmark, phase_a, phase_b hoặc eda.' >&2; exit 2 ;;
+  -h|--help) echo 'Cách dùng: bash colab_run.sh [rag|benchmark|phase_a|phase_b|full_phase_a|full_phase_a_viquad|full_phase_a_zalo|full_viquad_b_gen|full_viquad_b_judge|full_zalo_b_gen|full_zalo_b_judge|eda]'; exit 0 ;;
+  rag|benchmark|phase_a|phase_b|full_phase_a|full_phase_a_viquad|full_phase_a_zalo|full_viquad_b_gen|full_viquad_b_judge|full_zalo_b_gen|full_zalo_b_judge|eda) ;;
+  *) echo 'Chế độ không hợp lệ.' >&2; exit 2 ;;
 esac
 job_env=(--env "RAGVI_JOB_MODE=$mode")
 if [[ $mode == eda ]]; then
@@ -59,6 +59,17 @@ case "$mode" in
     else
       : "${RAGVI_DRIVE_URL:?Thư mục data/ cục bộ trống; hãy đặt RAGVI_DRIVE_URL thành URL thư mục dữ liệu Drive chia sẻ.}"
     fi ;;
+  full_phase_a|full_phase_a_viquad|full_phase_a_zalo|full_viquad_b_gen|full_viquad_b_judge|full_zalo_b_gen|full_zalo_b_judge)
+    files+=(data/eval_full)
+    if [[ -d data/retrieval_cache_full ]]; then
+      files+=(data/retrieval_cache_full)
+    fi
+    if [[ $mode != full_phase_a && $mode != full_phase_a_viquad && $mode != full_phase_a_zalo && -f data/retrieval_cache/llama-bin-80.tar.gz ]]; then
+      files+=(data/retrieval_cache/llama-bin-80.tar.gz)
+    fi
+    if [[ ! -d data/processed/viquad ]]; then
+      : "${RAGVI_DRIVE_URL:?Thư mục data/ cục bộ trống; hãy đặt RAGVI_DRIVE_URL thành URL thư mục dữ liệu Drive chia sẻ.}"
+    fi ;;
   eda) files+=(notebooks/06_eda_du_lieu.ipynb) ;;
 esac
 # Chỉ tải lên đầu vào cần thiết; chia gói > 15 MB thành các phần nhỏ để không vượt giới hạn PUT của Colab proxy.
@@ -84,13 +95,25 @@ elif [[ $mode == phase_b ]]; then
     --exclude='data/retrieval_cache/judge_viquad_dev.jsonl'
     --exclude='data/retrieval_cache/judge_zalo_dev.jsonl'
   )
+elif [[ $mode == full_zalo_b_* ]]; then
+  extra_excludes+=(
+    --exclude='data/retrieval_cache_full/*_viquad_*'
+  )
+elif [[ $mode == full_viquad_b_* ]]; then
+  extra_excludes+=(
+    --exclude='data/retrieval_cache_full/*_zalo_*'
+  )
 fi
 tar -czf "$tmp/project.tar.gz" --exclude='__pycache__' --exclude='zalo_legal__c3.jsonl' "${extra_excludes[@]}" "${files[@]}"
 archive="$tmp/project.tar.gz"
 if command -v cygpath >/dev/null; then archive=$(cygpath -m "$archive"); fi
 
 if [[ $mode != eda ]]; then
-  for gpu in G4 A100 L4 T4; do
+  gpu_list=(G4 A100 L4 T4)
+  if [[ $mode == full_viquad_b_* || $mode == full_zalo_b_* ]]; then
+    gpu_list=(A100 L4)
+  fi
+  for gpu in "${gpu_list[@]}"; do
     if "${cli[@]}" new -s "$session" --gpu "$gpu" 2>&1 | tee "$tmp/allocation.log"; then
       allocated=1
       break

@@ -1,0 +1,1463 @@
+{
+  "judge_calibrated": true,
+  "end_to_end": {
+    "viquad_full": {
+      "n_questions": 3814,
+      "n_answerable": 2653,
+      "n_unanswerable": 1161,
+      "n_clusters": 19,
+      "configs": {
+        "closed_book": {
+          "n": 3814,
+          "n_ans": 2653,
+          "n_unans": 1161,
+          "correct_refusal": 0.875968992248062,
+          "fabrication": 0.12403100775193798,
+          "false_refusal": 0.7459479834150019,
+          "contains_gold": 0.04033169996230682,
+          "em": 0.002638522427440633,
+          "f1": 0.06442874519464137,
+          "truncated_passages": 0,
+          "q_per_min": 30.1922798588441,
+          "p50_seconds": 1.352,
+          "n_judge_missing": 0,
+          "n_judge_errors": 1,
+          "correctness": 0.1870286576168929,
+          "n_correctness": 2652,
+          "h_gold": 0.75037147102526,
+          "n_h_gold": 673,
+          "h_ctx": null,
+          "n_h_ctx": 0,
+          "ci95": {
+            "correctness": [
+              0.141575,
+              0.24066
+            ],
+            "h_gold": [
+              0.696159,
+              0.792942
+            ],
+            "h_ctx": null,
+            "false_refusal": [
+              0.690428,
+              0.796974
+            ],
+            "correct_refusal": [
+              0.838139,
+              0.907016
+            ]
+          }
+        },
+        "oracle": {
+          "n": 2653,
+          "n_ans": 2653,
+          "n_unans": 0,
+          "correct_refusal": null,
+          "fabrication": null,
+          "false_refusal": 0.12627214474180173,
+          "contains_gold": 0.6569920844327177,
+          "em": 0.021108179419525065,
+          "f1": 0.45951753268392254,
+          "truncated_passages": 0,
+          "q_per_min": 16.89873857148226,
+          "p50_seconds": 3.314,
+          "n_judge_missing": 0,
+          "n_judge_errors": 1,
+          "correctness": 1.68815987933635,
+          "n_correctness": 2652,
+          "h_gold": 0.110056107034959,
+          "n_h_gold": 2317,
+          "h_ctx": 0.01078981441519206,
+          "n_h_ctx": 2317,
+          "ci95": {
+            "correctness": [
+              1.61246,
+              1.760047
+            ],
+            "h_gold": [
+              0.093593,
+              0.126281
+            ],
+            "h_ctx": [
+              0.005868,
+              0.016048
+            ],
+            "false_refusal": [
+              0.092193,
+              0.160973
+            ],
+            "correct_refusal": null
+          }
+        },
+        "C3-E0-R0": {
+          "n": 3814,
+          "n_ans": 2653,
+          "n_unans": 1161,
+          "correct_refusal": 0.7527993109388458,
+          "fabrication": 0.24720068906115417,
+          "false_refusal": 0.24085940444779494,
+          "contains_gold": 0.5450433471541651,
+          "em": 0.02148511119487373,
+          "f1": 0.378106367178745,
+          "truncated_passages": 0,
+          "q_per_min": 8.86974681454229,
+          "p50_seconds": 5.637499999999999,
+          "n_judge_missing": 0,
+          "n_judge_errors": 1,
+          "correctness": 1.4053544494720964,
+          "n_correctness": 2652,
+          "h_gold": 0.17933432687531048,
+          "n_h_gold": 2013,
+          "h_ctx": 0.020864381520119227,
+          "n_h_ctx": 2013,
+          "rah_against_oracle": {
+            "n_pairs": 1906,
+            "paired_diff": 0.057712,
+            "paired_ci95": [
+              0.039707,
+              0.074148
+            ],
+            "unpaired_diff": 0.069278,
+            "rah_share_of_h_gold": 0.386308
+          },
+          "ci95": {
+            "correctness": [
+              1.278951,
+              1.537242
+            ],
+            "h_gold": [
+              0.147467,
+              0.209537
+            ],
+            "h_ctx": [
+              0.011989,
+              0.03089
+            ],
+            "false_refusal": [
+              0.178106,
+              0.299538
+            ],
+            "correct_refusal": [
+              0.702208,
+              0.799297
+            ]
+          }
+        },
+        "C1-E3-R0": {
+          "n": 3814,
+          "n_ans": 2653,
+          "n_unans": 1161,
+          "correct_refusal": 0.7381567614125754,
+          "fabrication": 0.26184323858742464,
+          "false_refusal": 0.2035431586882774,
+          "contains_gold": 0.5601206181681115,
+          "em": 0.02223897474557105,
+          "f1": 0.3854435387577732,
+          "truncated_passages": 0,
+          "q_per_min": 8.618159928704724,
+          "p50_seconds": 6.008,
+          "n_judge_missing": 0,
+          "n_judge_errors": 0,
+          "correctness": 1.4685261967583867,
+          "n_correctness": 2653,
+          "h_gold": 0.20113582584003786,
+          "n_h_gold": 2113,
+          "h_ctx": 0.017983909133932798,
+          "n_h_ctx": 2113,
+          "rah_against_oracle": {
+            "n_pairs": 2006,
+            "paired_diff": 0.076271,
+            "paired_ci95": [
+              0.051178,
+              0.098623
+            ],
+            "unpaired_diff": 0.09108,
+            "rah_share_of_h_gold": 0.452827
+          },
+          "ci95": {
+            "correctness": [
+              1.393777,
+              1.551282
+            ],
+            "h_gold": [
+              0.160946,
+              0.237881
+            ],
+            "h_ctx": [
+              0.012524,
+              0.023196
+            ],
+            "false_refusal": [
+              0.16822,
+              0.236936
+            ],
+            "correct_refusal": [
+              0.695392,
+              0.780167
+            ]
+          }
+        },
+        "C3-E3-R0": {
+          "n": 3814,
+          "n_ans": 2653,
+          "n_unans": 1161,
+          "correct_refusal": 0.7217915590008613,
+          "fabrication": 0.27820844099913866,
+          "false_refusal": 0.18658122879758765,
+          "contains_gold": 0.5687900490011308,
+          "em": 0.021108179419525065,
+          "f1": 0.39061788200577496,
+          "truncated_passages": 0,
+          "q_per_min": 8.631834275722376,
+          "p50_seconds": 6.0495,
+          "n_judge_missing": 0,
+          "n_judge_errors": 1,
+          "correctness": 1.495475113122172,
+          "n_correctness": 2652,
+          "h_gold": 0.2067686601761706,
+          "n_h_gold": 2157,
+          "h_ctx": 0.01761706073249884,
+          "n_h_ctx": 2157,
+          "rah_against_oracle": {
+            "n_pairs": 2045,
+            "paired_diff": 0.079707,
+            "paired_ci95": [
+              0.060127,
+              0.096448
+            ],
+            "unpaired_diff": 0.096713,
+            "rah_share_of_h_gold": 0.467733
+          },
+          "ci95": {
+            "correctness": [
+              1.428444,
+              1.567505
+            ],
+            "h_gold": [
+              0.171497,
+              0.238273
+            ],
+            "h_ctx": [
+              0.012007,
+              0.02381
+            ],
+            "false_refusal": [
+              0.155869,
+              0.214797
+            ],
+            "correct_refusal": [
+              0.671874,
+              0.76608
+            ]
+          }
+        },
+        "C3-E5-R0": {
+          "n": 3814,
+          "n_ans": 2653,
+          "n_unans": 1161,
+          "correct_refusal": 0.7097329888027563,
+          "fabrication": 0.29026701119724374,
+          "false_refusal": 0.1552958914436487,
+          "contains_gold": 0.5955522050508858,
+          "em": 0.023369770071617037,
+          "f1": 0.41161774454890265,
+          "truncated_passages": 0,
+          "q_per_min": 8.768819298637002,
+          "p50_seconds": 6.1045,
+          "n_judge_missing": 0,
+          "n_judge_errors": 0,
+          "correctness": 1.558612891066717,
+          "n_correctness": 2653,
+          "h_gold": 0.2110664881749219,
+          "n_h_gold": 2241,
+          "h_ctx": 0.020526550647032574,
+          "n_h_ctx": 2241,
+          "rah_against_oracle": {
+            "n_pairs": 2125,
+            "paired_diff": 0.088471,
+            "paired_ci95": [
+              0.064458,
+              0.114341
+            ],
+            "unpaired_diff": 0.10101,
+            "rah_share_of_h_gold": 0.478571
+          },
+          "ci95": {
+            "correctness": [
+              1.476047,
+              1.647399
+            ],
+            "h_gold": [
+              0.175021,
+              0.247632
+            ],
+            "h_ctx": [
+              0.015837,
+              0.025668
+            ],
+            "false_refusal": [
+              0.117128,
+              0.19245
+            ],
+            "correct_refusal": [
+              0.655509,
+              0.76207
+            ]
+          }
+        },
+        "C3-E3-R1": {
+          "n": 3814,
+          "n_ans": 2653,
+          "n_unans": 1161,
+          "correct_refusal": 0.6907838070628768,
+          "fabrication": 0.30921619293712316,
+          "false_refusal": 0.14888805126272145,
+          "contains_gold": 0.5974368639276291,
+          "em": 0.023369770071617037,
+          "f1": 0.4139183452786191,
+          "truncated_passages": 0,
+          "q_per_min": 8.631248249205756,
+          "p50_seconds": 6.169499999999999,
+          "n_judge_missing": 0,
+          "n_judge_errors": 1,
+          "correctness": 1.5633484162895928,
+          "n_correctness": 2652,
+          "h_gold": 0.21843154630039877,
+          "n_h_gold": 2257,
+          "h_ctx": 0.020824102791315906,
+          "n_h_ctx": 2257,
+          "rah_against_oracle": {
+            "n_pairs": 2138,
+            "paired_diff": 0.095416,
+            "paired_ci95": [
+              0.066912,
+              0.121736
+            ],
+            "unpaired_diff": 0.108375,
+            "rah_share_of_h_gold": 0.496153
+          },
+          "ci95": {
+            "correctness": [
+              1.479393,
+              1.648167
+            ],
+            "h_gold": [
+              0.175502,
+              0.259358
+            ],
+            "h_ctx": [
+              0.015169,
+              0.026991
+            ],
+            "false_refusal": [
+              0.113376,
+              0.184366
+            ],
+            "correct_refusal": [
+              0.643545,
+              0.736093
+            ]
+          }
+        },
+        "C4-E5-R1": {
+          "n": 3814,
+          "n_ans": 2653,
+          "n_unans": 1161,
+          "correct_refusal": 0.6959517657192076,
+          "fabrication": 0.3040482342807924,
+          "false_refusal": 0.13004146249528836,
+          "contains_gold": 0.6147757255936676,
+          "em": 0.024500565397663022,
+          "f1": 0.4222150004880196,
+          "truncated_passages": 2,
+          "q_per_min": 7.664088147328932,
+          "p50_seconds": 6.96,
+          "n_judge_missing": 0,
+          "n_judge_errors": 1,
+          "correctness": 1.5972850678733033,
+          "n_correctness": 2652,
+          "h_gold": 0.2223667100130039,
+          "n_h_gold": 2307,
+          "h_ctx": 0.022973558734286952,
+          "n_h_ctx": 2307,
+          "rah_against_oracle": {
+            "n_pairs": 2178,
+            "paired_diff": 0.098255,
+            "paired_ci95": [
+              0.068983,
+              0.124931
+            ],
+            "unpaired_diff": 0.112311,
+            "rah_share_of_h_gold": 0.505069
+          },
+          "ci95": {
+            "correctness": [
+              1.509936,
+              1.686667
+            ],
+            "h_gold": [
+              0.176766,
+              0.264364
+            ],
+            "h_ctx": [
+              0.016219,
+              0.029879
+            ],
+            "false_refusal": [
+              0.093212,
+              0.165726
+            ],
+            "correct_refusal": [
+              0.645751,
+              0.74668
+            ]
+          }
+        }
+      },
+      "rah_against_oracle": {
+        "n_pairs": 2045,
+        "value": 0.07970660146699267
+      }
+    },
+    "zalo_full": {
+      "n_questions": 3096,
+      "n_answerable": 2167,
+      "n_unanswerable": 929,
+      "n_clusters": 2117,
+      "configs": {
+        "closed_book": {
+          "n": 3096,
+          "n_ans": 2167,
+          "n_unans": 929,
+          "correct_refusal": 0.5715823466092572,
+          "fabrication": 0.4284176533907427,
+          "false_refusal": 0.5814490078449469,
+          "contains_gold": null,
+          "em": null,
+          "f1": null,
+          "truncated_passages": 0,
+          "q_per_min": 15.263127493373942,
+          "p50_seconds": 1.649,
+          "n_judge_missing": 0,
+          "n_judge_errors": 0,
+          "correctness": 0.21642824180895248,
+          "n_correctness": 2167,
+          "h_gold": 0.8412348401323043,
+          "n_h_gold": 907,
+          "h_ctx": null,
+          "n_h_ctx": 0,
+          "wrong_article": 0.17750826901874311,
+          "n_wrong_article": 907,
+          "ci95": {
+            "correctness": [
+              0.191908,
+              0.242898
+            ],
+            "h_gold": [
+              0.814461,
+              0.864694
+            ],
+            "h_ctx": null,
+            "false_refusal": [
+              0.556018,
+              0.607874
+            ],
+            "correct_refusal": [
+              0.530438,
+              0.613447
+            ],
+            "wrong_article": [
+              0.145176,
+              0.207741
+            ]
+          }
+        },
+        "oracle": {
+          "n": 2167,
+          "n_ans": 2167,
+          "n_unans": 0,
+          "correct_refusal": null,
+          "fabrication": null,
+          "false_refusal": 0.1495154591601292,
+          "contains_gold": null,
+          "em": null,
+          "f1": null,
+          "truncated_passages": 95,
+          "q_per_min": 6.11866885775436,
+          "p50_seconds": 9.125,
+          "n_judge_missing": 0,
+          "n_judge_errors": 0,
+          "correctness": 1.656668204891555,
+          "n_correctness": 2167,
+          "h_gold": 0.020618556701030927,
+          "n_h_gold": 1843,
+          "h_ctx": 0.05154639175257732,
+          "n_h_ctx": 1843,
+          "wrong_article": 0.019533369506239826,
+          "n_wrong_article": 1843,
+          "ci95": {
+            "correctness": [
+              1.617217,
+              1.690593
+            ],
+            "h_gold": [
+              0.012255,
+              0.029762
+            ],
+            "h_ctx": [
+              0.027618,
+              0.081712
+            ],
+            "false_refusal": [
+              0.132529,
+              0.168325
+            ],
+            "correct_refusal": null,
+            "wrong_article": [
+              0.013272,
+              0.025952
+            ]
+          }
+        },
+        "C5_nohead-E3-R0": {
+          "n": 3096,
+          "n_ans": 2167,
+          "n_unans": 929,
+          "correct_refusal": 0.5941872981700753,
+          "fabrication": 0.4058127018299246,
+          "false_refusal": 0.2699584679280111,
+          "contains_gold": null,
+          "em": null,
+          "f1": null,
+          "truncated_passages": 0,
+          "q_per_min": 7.548915251844468,
+          "p50_seconds": 6.948,
+          "n_judge_missing": 0,
+          "n_judge_errors": 0,
+          "correctness": 1.238117212736502,
+          "n_correctness": 2167,
+          "h_gold": 0.21997471554993678,
+          "n_h_gold": 1582,
+          "h_ctx": 0.028445006321112517,
+          "n_h_ctx": 1582,
+          "wrong_article": 0.03350189633375474,
+          "n_wrong_article": 1582,
+          "rah_against_oracle": {
+            "n_pairs": 1492,
+            "paired_diff": 0.182976,
+            "paired_ci95": [
+              0.156544,
+              0.212183
+            ],
+            "unpaired_diff": 0.199356,
+            "rah_share_of_h_gold": 0.906269
+          },
+          "ci95": {
+            "correctness": [
+              1.15259,
+              1.309467
+            ],
+            "h_gold": [
+              0.192944,
+              0.249273
+            ],
+            "h_ctx": [
+              0.02042,
+              0.037176
+            ],
+            "false_refusal": [
+              0.243552,
+              0.299394
+            ],
+            "correct_refusal": [
+              0.555177,
+              0.632746
+            ],
+            "wrong_article": [
+              0.024584,
+              0.043054
+            ]
+          }
+        },
+        "C3-E0-R0": {
+          "n": 3096,
+          "n_ans": 2167,
+          "n_unans": 929,
+          "correct_refusal": 0.5984930032292788,
+          "fabrication": 0.4015069967707212,
+          "false_refusal": 0.26165205353022614,
+          "contains_gold": null,
+          "em": null,
+          "f1": null,
+          "truncated_passages": 0,
+          "q_per_min": 5.077904668900443,
+          "p50_seconds": 10.2015,
+          "n_judge_missing": 0,
+          "n_judge_errors": 0,
+          "correctness": 1.3068758652514998,
+          "n_correctness": 2167,
+          "h_gold": 0.18625,
+          "n_h_gold": 1600,
+          "h_ctx": 0.039375,
+          "n_h_ctx": 1600,
+          "wrong_article": 0.048125,
+          "n_wrong_article": 1600,
+          "rah_against_oracle": {
+            "n_pairs": 1514,
+            "paired_diff": 0.154557,
+            "paired_ci95": [
+              0.126455,
+              0.184214
+            ],
+            "unpaired_diff": 0.165631,
+            "rah_share_of_h_gold": 0.889296
+          },
+          "ci95": {
+            "correctness": [
+              1.248693,
+              1.36529
+            ],
+            "h_gold": [
+              0.15909,
+              0.216106
+            ],
+            "h_ctx": [
+              0.027991,
+              0.050849
+            ],
+            "false_refusal": [
+              0.240111,
+              0.282289
+            ],
+            "correct_refusal": [
+              0.561829,
+              0.637503
+            ],
+            "wrong_article": [
+              0.037472,
+              0.059265
+            ]
+          }
+        },
+        "C3-E3-R0": {
+          "n": 3096,
+          "n_ans": 2167,
+          "n_unans": 929,
+          "correct_refusal": 0.5705059203444564,
+          "fabrication": 0.4294940796555436,
+          "false_refusal": 0.2021227503461006,
+          "contains_gold": null,
+          "em": null,
+          "f1": null,
+          "truncated_passages": 0,
+          "q_per_min": 4.948130139019122,
+          "p50_seconds": 10.8115,
+          "n_judge_missing": 0,
+          "n_judge_errors": 0,
+          "correctness": 1.4337794185509922,
+          "n_correctness": 2167,
+          "h_gold": 0.17582417582417584,
+          "n_h_gold": 1729,
+          "h_ctx": 0.03643724696356275,
+          "n_h_ctx": 1729,
+          "wrong_article": 0.0410641989589358,
+          "n_wrong_article": 1729,
+          "rah_against_oracle": {
+            "n_pairs": 1628,
+            "paired_diff": 0.137592,
+            "paired_ci95": [
+              0.113009,
+              0.163174
+            ],
+            "unpaired_diff": 0.155206,
+            "rah_share_of_h_gold": 0.882732
+          },
+          "ci95": {
+            "correctness": [
+              1.363992,
+              1.493465
+            ],
+            "h_gold": [
+              0.151831,
+              0.200987
+            ],
+            "h_ctx": [
+              0.026528,
+              0.047541
+            ],
+            "false_refusal": [
+              0.178692,
+              0.22607
+            ],
+            "correct_refusal": [
+              0.532095,
+              0.607743
+            ],
+            "wrong_article": [
+              0.030951,
+              0.051415
+            ]
+          }
+        },
+        "C4-E3-R0": {
+          "n": 3096,
+          "n_ans": 2167,
+          "n_unans": 929,
+          "correct_refusal": 0.5705059203444564,
+          "fabrication": 0.4294940796555436,
+          "false_refusal": 0.20119981541301338,
+          "contains_gold": null,
+          "em": null,
+          "f1": null,
+          "truncated_passages": 1660,
+          "q_per_min": 2.9244396488839923,
+          "p50_seconds": 16.706,
+          "n_judge_missing": 0,
+          "n_judge_errors": 0,
+          "correctness": 1.4476234425473005,
+          "n_correctness": 2167,
+          "h_gold": 0.17619872905834777,
+          "n_h_gold": 1731,
+          "h_ctx": 0.043327556325823226,
+          "n_h_ctx": 1731,
+          "wrong_article": 0.0635470826112074,
+          "n_wrong_article": 1731,
+          "rah_against_oracle": {
+            "n_pairs": 1607,
+            "paired_diff": 0.13379,
+            "paired_ci95": [
+              0.110468,
+              0.158304
+            ],
+            "unpaired_diff": 0.15558,
+            "rah_share_of_h_gold": 0.882981
+          },
+          "ci95": {
+            "correctness": [
+              1.342972,
+              1.533628
+            ],
+            "h_gold": [
+              0.151456,
+              0.202393
+            ],
+            "h_ctx": [
+              0.030921,
+              0.057872
+            ],
+            "false_refusal": [
+              0.166095,
+              0.241022
+            ],
+            "correct_refusal": [
+              0.531797,
+              0.606459
+            ],
+            "wrong_article": [
+              0.051441,
+              0.076707
+            ]
+          }
+        },
+        "C5-E3-R0": {
+          "n": 3096,
+          "n_ans": 2167,
+          "n_unans": 929,
+          "correct_refusal": 0.5446716899892358,
+          "fabrication": 0.45532831001076424,
+          "false_refusal": 0.17951084448546378,
+          "contains_gold": null,
+          "em": null,
+          "f1": null,
+          "truncated_passages": 0,
+          "q_per_min": 5.831297511725457,
+          "p50_seconds": 9.186,
+          "n_judge_missing": 0,
+          "n_judge_errors": 1,
+          "correctness": 1.4450600184672207,
+          "n_correctness": 2166,
+          "h_gold": 0.20427687113111986,
+          "n_h_gold": 1777,
+          "h_ctx": 0.038266741699493526,
+          "n_h_ctx": 1777,
+          "wrong_article": 0.032076533483398985,
+          "n_wrong_article": 1777,
+          "rah_against_oracle": {
+            "n_pairs": 1663,
+            "paired_diff": 0.170174,
+            "paired_ci95": [
+              0.142948,
+              0.198483
+            ],
+            "unpaired_diff": 0.183658,
+            "rah_share_of_h_gold": 0.899066
+          },
+          "ci95": {
+            "correctness": [
+              1.37701,
+              1.508006
+            ],
+            "h_gold": [
+              0.179457,
+              0.233369
+            ],
+            "h_ctx": [
+              0.022779,
+              0.057712
+            ],
+            "false_refusal": [
+              0.157747,
+              0.201091
+            ],
+            "correct_refusal": [
+              0.504504,
+              0.58308
+            ],
+            "wrong_article": [
+              0.024447,
+              0.041097
+            ]
+          }
+        },
+        "C3-E5-R0": {
+          "n": 3096,
+          "n_ans": 2167,
+          "n_unans": 929,
+          "correct_refusal": 0.5575888051668461,
+          "fabrication": 0.44241119483315394,
+          "false_refusal": 0.18227964928472543,
+          "contains_gold": null,
+          "em": null,
+          "f1": null,
+          "truncated_passages": 0,
+          "q_per_min": 5.026138436184236,
+          "p50_seconds": 10.519,
+          "n_judge_missing": 0,
+          "n_judge_errors": 0,
+          "correctness": 1.4706968158744809,
+          "n_correctness": 2167,
+          "h_gold": 0.17494356659142213,
+          "n_h_gold": 1772,
+          "h_ctx": 0.034424379232505645,
+          "n_h_ctx": 1772,
+          "wrong_article": 0.04232505643340858,
+          "n_wrong_article": 1772,
+          "rah_against_oracle": {
+            "n_pairs": 1661,
+            "paired_diff": 0.140879,
+            "paired_ci95": [
+              0.11768,
+              0.166575
+            ],
+            "unpaired_diff": 0.154325,
+            "rah_share_of_h_gold": 0.882142
+          },
+          "ci95": {
+            "correctness": [
+              1.404884,
+              1.528437
+            ],
+            "h_gold": [
+              0.152491,
+              0.197637
+            ],
+            "h_ctx": [
+              0.025448,
+              0.043458
+            ],
+            "false_refusal": [
+              0.158984,
+              0.205772
+            ],
+            "correct_refusal": [
+              0.517953,
+              0.596878
+            ],
+            "wrong_article": [
+              0.033172,
+              0.052632
+            ]
+          }
+        },
+        "C3-E3-R1": {
+          "n": 3096,
+          "n_ans": 2167,
+          "n_unans": 929,
+          "correct_refusal": 0.5296017222820237,
+          "fabrication": 0.4703982777179763,
+          "false_refusal": 0.15459160129210892,
+          "contains_gold": null,
+          "em": null,
+          "f1": null,
+          "truncated_passages": 0,
+          "q_per_min": 5.057862507986977,
+          "p50_seconds": 10.6825,
+          "n_judge_missing": 0,
+          "n_judge_errors": 0,
+          "correctness": 1.5242270419935395,
+          "n_correctness": 2167,
+          "h_gold": 0.1806768558951965,
+          "n_h_gold": 1832,
+          "h_ctx": 0.035480349344978165,
+          "n_h_ctx": 1832,
+          "wrong_article": 0.03766375545851528,
+          "n_wrong_article": 1832,
+          "rah_against_oracle": {
+            "n_pairs": 1704,
+            "paired_diff": 0.146714,
+            "paired_ci95": [
+              0.12189,
+              0.177042
+            ],
+            "unpaired_diff": 0.160058,
+            "rah_share_of_h_gold": 0.885882
+          },
+          "ci95": {
+            "correctness": [
+              1.446575,
+              1.58767
+            ],
+            "h_gold": [
+              0.155641,
+              0.207225
+            ],
+            "h_ctx": [
+              0.025219,
+              0.045694
+            ],
+            "false_refusal": [
+              0.130348,
+              0.180279
+            ],
+            "correct_refusal": [
+              0.490942,
+              0.566121
+            ],
+            "wrong_article": [
+              0.02931,
+              0.047485
+            ]
+          }
+        },
+        "C5-E5-R1": {
+          "n": 3096,
+          "n_ans": 2167,
+          "n_unans": 929,
+          "correct_refusal": 0.5177610333692142,
+          "fabrication": 0.4822389666307858,
+          "false_refusal": 0.15274573142593448,
+          "contains_gold": null,
+          "em": null,
+          "f1": null,
+          "truncated_passages": 0,
+          "q_per_min": 5.774567308463483,
+          "p50_seconds": 9.267,
+          "n_judge_missing": 0,
+          "n_judge_errors": 0,
+          "correctness": 1.5265343793262576,
+          "n_correctness": 2167,
+          "h_gold": 0.18572984749455337,
+          "n_h_gold": 1836,
+          "h_ctx": 0.03376906318082789,
+          "n_h_ctx": 1836,
+          "wrong_article": 0.032679738562091505,
+          "n_wrong_article": 1836,
+          "rah_against_oracle": {
+            "n_pairs": 1707,
+            "paired_diff": 0.156415,
+            "paired_ci95": [
+              0.133293,
+              0.181399
+            ],
+            "unpaired_diff": 0.165111,
+            "rah_share_of_h_gold": 0.888986
+          },
+          "ci95": {
+            "correctness": [
+              1.455414,
+              1.588079
+            ],
+            "h_gold": [
+              0.161204,
+              0.211649
+            ],
+            "h_ctx": [
+              0.023837,
+              0.044588
+            ],
+            "false_refusal": [
+              0.131088,
+              0.175153
+            ],
+            "correct_refusal": [
+              0.47826,
+              0.556663
+            ],
+            "wrong_article": [
+              0.02467,
+              0.040735
+            ]
+          }
+        }
+      },
+      "rah_against_oracle": {
+        "n_pairs": 1628,
+        "value": 0.1375921375921376
+      }
+    }
+  },
+  "comparisons": {
+    "viquad_full": [
+      {
+        "label": "Best C4-E5-R1 vs Anchor C3-E3-R0",
+        "config_a": "C4-E5-R1",
+        "config_b": "C3-E3-R0",
+        "metric": "correctness",
+        "n_pairs": 2651,
+        "mean_a": 1.597888,
+        "mean_b": 1.496039,
+        "diff": 0.101848,
+        "diff_ci95": [
+          0.065124,
+          0.140068
+        ],
+        "p_raw": 0.0001,
+        "p_holm": 0.0006
+      },
+      {
+        "label": "H1: C3 vs C1",
+        "config_a": "C3-E3-R0",
+        "config_b": "C1-E3-R0",
+        "metric": "correctness",
+        "n_pairs": 2652,
+        "mean_a": 1.495475,
+        "mean_b": 1.46908,
+        "diff": 0.026395,
+        "diff_ci95": [
+          0.000715,
+          0.048044
+        ],
+        "p_raw": 0.0019,
+        "p_holm": 0.0019
+      },
+      {
+        "label": "H2: Dense vs BM25",
+        "config_a": "C3-E3-R0",
+        "config_b": "C3-E0-R0",
+        "metric": "correctness",
+        "n_pairs": 2651,
+        "mean_a": 1.496039,
+        "mean_b": 1.405885,
+        "diff": 0.090155,
+        "diff_ci95": [
+          0.01701,
+          0.162177
+        ],
+        "p_raw": 0.0001,
+        "p_holm": 0.0006
+      },
+      {
+        "label": "H2: Hybrid vs Dense",
+        "config_a": "C3-E5-R0",
+        "config_b": "C3-E3-R0",
+        "metric": "correctness",
+        "n_pairs": 2652,
+        "mean_a": 1.558446,
+        "mean_b": 1.495475,
+        "diff": 0.062971,
+        "diff_ci95": [
+          0.034604,
+          0.089098
+        ],
+        "p_raw": 0.0001,
+        "p_holm": 0.0006
+      },
+      {
+        "label": "H3: Rerank R1 vs R0",
+        "config_a": "C3-E3-R1",
+        "config_b": "C3-E3-R0",
+        "metric": "correctness",
+        "n_pairs": 2651,
+        "mean_a": 1.563938,
+        "mean_b": 1.495285,
+        "diff": 0.068653,
+        "diff_ci95": [
+          0.036254,
+          0.099403
+        ],
+        "p_raw": 0.0001,
+        "p_holm": 0.0006
+      },
+      {
+        "label": "Best C4-E5-R1 vs Oracle",
+        "config_a": "C4-E5-R1",
+        "config_b": "oracle",
+        "metric": "correctness",
+        "n_pairs": 2651,
+        "mean_a": 1.597133,
+        "mean_b": 1.688797,
+        "diff": -0.091664,
+        "diff_ci95": [
+          -0.13283,
+          -0.052708
+        ],
+        "p_raw": 0.0001,
+        "p_holm": 0.0006
+      },
+      {
+        "label": "Best C4-E5-R1 vs Anchor C3-E3-R0",
+        "config_a": "C4-E5-R1",
+        "config_b": "C3-E3-R0",
+        "metric": "h_gold",
+        "n_pairs": 2088,
+        "mean_a": 0.220785,
+        "mean_b": 0.204023,
+        "diff": 0.016762,
+        "diff_ci95": [
+          0.004579,
+          0.029651
+        ],
+        "p_raw": 0.024098,
+        "p_holm": 0.09639
+      },
+      {
+        "label": "H1: C3 vs C1",
+        "config_a": "C3-E3-R0",
+        "config_b": "C1-E3-R0",
+        "metric": "h_gold",
+        "n_pairs": 2075,
+        "mean_a": 0.200964,
+        "mean_b": 0.199036,
+        "diff": 0.001928,
+        "diff_ci95": [
+          -0.005401,
+          0.010877
+        ],
+        "p_raw": 0.739926,
+        "p_holm": 0.739926
+      },
+      {
+        "label": "H2: Dense vs BM25",
+        "config_a": "C3-E3-R0",
+        "config_b": "C3-E0-R0",
+        "metric": "h_gold",
+        "n_pairs": 1842,
+        "mean_a": 0.199783,
+        "mean_b": 0.178067,
+        "diff": 0.021716,
+        "diff_ci95": [
+          0.008601,
+          0.033298
+        ],
+        "p_raw": 0.012699,
+        "p_holm": 0.063494
+      },
+      {
+        "label": "H2: Hybrid vs Dense",
+        "config_a": "C3-E5-R0",
+        "config_b": "C3-E3-R0",
+        "metric": "h_gold",
+        "n_pairs": 2073,
+        "mean_a": 0.213218,
+        "mean_b": 0.20357,
+        "diff": 0.009648,
+        "diff_ci95": [
+          -0.004969,
+          0.027464
+        ],
+        "p_raw": 0.183082,
+        "p_holm": 0.408859
+      },
+      {
+        "label": "H3: Rerank R1 vs R0",
+        "config_a": "C3-E3-R1",
+        "config_b": "C3-E3-R0",
+        "metric": "h_gold",
+        "n_pairs": 2086,
+        "mean_a": 0.214765,
+        "mean_b": 0.204219,
+        "diff": 0.010547,
+        "diff_ci95": [
+          -0.002441,
+          0.022075
+        ],
+        "p_raw": 0.136286,
+        "p_holm": 0.408859
+      },
+      {
+        "label": "Best C4-E5-R1 vs Oracle",
+        "config_a": "C4-E5-R1",
+        "config_b": "oracle",
+        "metric": "h_gold",
+        "n_pairs": 2178,
+        "mean_a": 0.211662,
+        "mean_b": 0.113407,
+        "diff": 0.098255,
+        "diff_ci95": [
+          0.068534,
+          0.123069
+        ],
+        "p_raw": 0.0001,
+        "p_holm": 0.0006
+      }
+    ],
+    "zalo_full": [
+      {
+        "label": "H1b: ViStructChunk C5 vs C5_nohead",
+        "config_a": "C5-E3-R0",
+        "config_b": "C5_nohead-E3-R0",
+        "metric": "correctness",
+        "n_pairs": 2166,
+        "mean_a": 1.44506,
+        "mean_b": 1.237765,
+        "diff": 0.207295,
+        "diff_ci95": [
+          0.169331,
+          0.245592
+        ],
+        "p_raw": 0.0001,
+        "p_holm": 0.0008
+      },
+      {
+        "label": "H1: C5 vs C3",
+        "config_a": "C5-E3-R0",
+        "config_b": "C3-E3-R0",
+        "metric": "correctness",
+        "n_pairs": 2166,
+        "mean_a": 1.44506,
+        "mean_b": 1.433518,
+        "diff": 0.011542,
+        "diff_ci95": [
+          -0.025945,
+          0.049042
+        ],
+        "p_raw": 0.521348,
+        "p_holm": 0.850915
+      },
+      {
+        "label": "H1: C4 vs C3",
+        "config_a": "C4-E3-R0",
+        "config_b": "C3-E3-R0",
+        "metric": "correctness",
+        "n_pairs": 2167,
+        "mean_a": 1.447623,
+        "mean_b": 1.433779,
+        "diff": 0.013844,
+        "diff_ci95": [
+          -0.044789,
+          0.071923
+        ],
+        "p_raw": 0.425457,
+        "p_holm": 0.850915
+      },
+      {
+        "label": "H2: Dense vs BM25",
+        "config_a": "C3-E3-R0",
+        "config_b": "C3-E0-R0",
+        "metric": "correctness",
+        "n_pairs": 2167,
+        "mean_a": 1.433779,
+        "mean_b": 1.306876,
+        "diff": 0.126904,
+        "diff_ci95": [
+          0.087694,
+          0.167794
+        ],
+        "p_raw": 0.0001,
+        "p_holm": 0.0008
+      },
+      {
+        "label": "H2: Hybrid vs Dense",
+        "config_a": "C3-E5-R0",
+        "config_b": "C3-E3-R0",
+        "metric": "correctness",
+        "n_pairs": 2167,
+        "mean_a": 1.470697,
+        "mean_b": 1.433779,
+        "diff": 0.036917,
+        "diff_ci95": [
+          0.008112,
+          0.065579
+        ],
+        "p_raw": 0.008999,
+        "p_holm": 0.026997
+      },
+      {
+        "label": "H3: Rerank R1 vs R0",
+        "config_a": "C3-E3-R1",
+        "config_b": "C3-E3-R0",
+        "metric": "correctness",
+        "n_pairs": 2167,
+        "mean_a": 1.524227,
+        "mean_b": 1.433779,
+        "diff": 0.090448,
+        "diff_ci95": [
+          0.062938,
+          0.118386
+        ],
+        "p_raw": 0.0001,
+        "p_holm": 0.0008
+      },
+      {
+        "label": "Best C5-E5-R1 vs Anchor C3-E3-R0",
+        "config_a": "C5-E5-R1",
+        "config_b": "C3-E3-R0",
+        "metric": "correctness",
+        "n_pairs": 2167,
+        "mean_a": 1.526534,
+        "mean_b": 1.433779,
+        "diff": 0.092755,
+        "diff_ci95": [
+          0.0562,
+          0.13143
+        ],
+        "p_raw": 0.0001,
+        "p_holm": 0.0008
+      },
+      {
+        "label": "Best C5-E5-R1 vs Oracle",
+        "config_a": "C5-E5-R1",
+        "config_b": "oracle",
+        "metric": "correctness",
+        "n_pairs": 2167,
+        "mean_a": 1.526534,
+        "mean_b": 1.656668,
+        "diff": -0.130134,
+        "diff_ci95": [
+          -0.206811,
+          -0.066082
+        ],
+        "p_raw": 0.0001,
+        "p_holm": 0.0008
+      },
+      {
+        "label": "H1b: ViStructChunk C5 vs C5_nohead",
+        "config_a": "C5-E3-R0",
+        "config_b": "C5_nohead-E3-R0",
+        "metric": "h_gold",
+        "n_pairs": 1514,
+        "mean_a": 0.181638,
+        "mean_b": 0.209379,
+        "diff": -0.027741,
+        "diff_ci95": [
+          -0.048192,
+          -0.008625
+        ],
+        "p_raw": 0.007999,
+        "p_holm": 0.047995
+      },
+      {
+        "label": "H1: C5 vs C3",
+        "config_a": "C5-E3-R0",
+        "config_b": "C3-E3-R0",
+        "metric": "h_gold",
+        "n_pairs": 1625,
+        "mean_a": 0.194462,
+        "mean_b": 0.164923,
+        "diff": 0.029538,
+        "diff_ci95": [
+          0.009761,
+          0.048034
+        ],
+        "p_raw": 0.0039,
+        "p_holm": 0.027297
+      },
+      {
+        "label": "H1: C4 vs C3",
+        "config_a": "C4-E3-R0",
+        "config_b": "C3-E3-R0",
+        "metric": "h_gold",
+        "n_pairs": 1584,
+        "mean_a": 0.16351,
+        "mean_b": 0.169192,
+        "diff": -0.005682,
+        "diff_ci95": [
+          -0.024936,
+          0.013889
+        ],
+        "p_raw": 0.547045,
+        "p_holm": 1.0
+      },
+      {
+        "label": "H2: Dense vs BM25",
+        "config_a": "C3-E3-R0",
+        "config_b": "C3-E0-R0",
+        "metric": "h_gold",
+        "n_pairs": 1485,
+        "mean_a": 0.163636,
+        "mean_b": 0.172391,
+        "diff": -0.008754,
+        "diff_ci95": [
+          -0.027737,
+          0.01102
+        ],
+        "p_raw": 0.406759,
+        "p_holm": 1.0
+      },
+      {
+        "label": "H2: Hybrid vs Dense",
+        "config_a": "C3-E5-R0",
+        "config_b": "C3-E3-R0",
+        "metric": "h_gold",
+        "n_pairs": 1653,
+        "mean_a": 0.163944,
+        "mean_b": 0.163944,
+        "diff": 0.0,
+        "diff_ci95": [
+          -0.01439,
+          0.014843
+        ],
+        "p_raw": 1.0,
+        "p_holm": 1.0
+      },
+      {
+        "label": "H3: Rerank R1 vs R0",
+        "config_a": "C3-E3-R1",
+        "config_b": "C3-E3-R0",
+        "metric": "h_gold",
+        "n_pairs": 1684,
+        "mean_a": 0.172803,
+        "mean_b": 0.167458,
+        "diff": 0.005344,
+        "diff_ci95": [
+          -0.011037,
+          0.020835
+        ],
+        "p_raw": 0.563444,
+        "p_holm": 1.0
+      },
+      {
+        "label": "Best C5-E5-R1 vs Anchor C3-E3-R0",
+        "config_a": "C5-E5-R1",
+        "config_b": "C3-E3-R0",
+        "metric": "h_gold",
+        "n_pairs": 1641,
+        "mean_a": 0.176722,
+        "mean_b": 0.167581,
+        "diff": 0.009141,
+        "diff_ci95": [
+          -0.010924,
+          0.030006
+        ],
+        "p_raw": 0.383462,
+        "p_holm": 1.0
+      },
+      {
+        "label": "Best C5-E5-R1 vs Oracle",
+        "config_a": "C5-E5-R1",
+        "config_b": "oracle",
+        "metric": "h_gold",
+        "n_pairs": 1707,
+        "mean_a": 0.172232,
+        "mean_b": 0.015817,
+        "diff": 0.156415,
+        "diff_ci95": [
+          0.132845,
+          0.183615
+        ],
+        "p_raw": 0.0001,
+        "p_holm": 0.0008
+      }
+    ]
+  }
+}
