@@ -125,7 +125,32 @@
 
 ---
 
-## 8. Điểm nhấn Kỹ thuật & Tối ưu hoá Triển khai (cho mục Thiết kế Hệ thống)
+## 8. Khung Khuyến nghị Đa tiêu chí (Biên Pareto + MCDM + Độ nhạy `±0,1`, Mục 5.9) & Hồi quy Logistic (Mục 5.8)
+
+*(Nguồn: [reports/pareto_mcdm_summary.json](pareto_mcdm_summary.json), [reports/logistic_summary.json](logistic_summary.json), Hình: [fig4_pareto_mcdm.svg](figures/fig4_pareto_mcdm.svg))*
+
+### 8.1. Biên Pareto & Điểm có trọng số 3 kịch bản (Full Datasets)
+- **Zalo Legal Full (`8` cấu hình RAG):**
+  - **3 cấu hình bị trội (loại khỏi khuyến nghị):** `C3-E0-R0` (bị trội hoàn toàn bởi **`C5-E5-R1`** trên cả 3 tiêu chí), `C3-E3-R0` và `C4-E3-R0` nguyên điều (cả hai bị trội bởi `C3-E5-R0`).
+  - **5 cấu hình Biên Pareto:** `C5-E5-R1`, `C3-E5-R0`, `C3-E3-R1`, `C5-E3-R0`, `C5_nohead-E3-R0`.
+  - **Kết quả 3 kịch bản & Phân tích độ nhạy (dao động trọng số `±0,10`):**
+    - *Cân bằng (`0,34 / 0,33 / 0,33`):* **`C5-E5-R1`** hạng `#1` (`score = 0,7136`, **độ ổn định `100,0%` — `27/27` điểm lưới**).
+    - *Tra cứu nhanh (`0,20 / 0,30 / 0,50`):* **`C5-E5-R1`** hạng `#1` (`score = 0,6416`, **độ ổn định `88,9%` — `24/27` điểm lưới**, vì chunk `C5` ngắn nên `p50 = 9,27 s` nhanh hơn cả `C3` và `C4`).
+    - *Pháp luật / Y tế (`0,60 / 0,30 / 0,10`):* **`C3-E5-R0`** hạng `#1` (`score = 0,8463`, độ ổn định `77,8%` — `14/18` điểm lưới; `C5-E5-R1` thắng ở `3/18` điểm lưới và có lỗi nhầm điều luật thấp hơn `3,27%` vs `4,23%`).
+- **UIT-ViQuAD 2.0 Full (`6` cấu hình RAG):**
+  - Cả `6/6` cấu hình đều nằm trên Biên Pareto. Trong không gian 3 tiêu chí `(H_gold, Correctness, Latency)`, `C3-E0-R0` đạt điểm MCDM `#1` (`stability = 81,5%–100%`) chủ yếu vì có `H_gold` danh nghĩa thấp nhất (`17,93%`) và độ trễ thấp nhất (`5,64 s`), **nhưng phải trả giá bằng tỷ lệ từ chối sai rất cao (`false_refusal = 24,09%` vs `13,00%` của `C4-E5-R1`)**. Khi đặt ràng buộc `false_refusal ≤ 16%`, cấu hình khuyến nghị tối ưu là **`C4-E5-R1`** (độ đúng cao nhất) hoặc **`C3-E5-R0`** (cân bằng, không cần Reranker).
+
+### 8.2. Hồi quy Logistic (`H_gold ~ Recall@5 + Reranker + Hybrid + Chunking`, Mục 5.8)
+- **Zalo Legal Full (`n = 13.859` quan sát, `McFadden R² = 0,1128`):**
+  - **`Recall@5`:** $\beta = -2,8754$ ($z = -35,66$, $p < 10^{-10}$, **Odds Ratio = `0,056`**) $\rightarrow$ Truy xuất trúng điều luật vàng vào Top-5 làm **giảm `94,4%` odds bị ảo giác** (giảm `18` lần).
+  - Sau khi kiểm soát `Recall@5`, `has_reranker` ($p = 0,4238$) và `is_hybrid` ($p = 0,7481$) **không còn tác động trực tiếp** $\Rightarrow$ lợi ích giảm ảo giác của Hybrid và Reranker đi **hoàn toàn gián tiếp qua `Recall@5`**.
+  - **`is_c5_nohead`:** $\beta = +0,3220$ ($z = +4,23$, $p < 0,0001$, **`OR = 1,380`**) $\rightarrow$ Bỏ tiêu đề phân cấp làm **tăng trực tiếp `+38%` odds ảo giác ngay cả khi `Recall@5` không đổi**.
+- **UIT-ViQuAD 2.0 Full (`n = 13.088` quan sát, `McFadden R² = 0,0558`):**
+  - **`Recall@5`:** $\beta = -2,8660$ ($z = -23,58$, $p < 10^{-10}$, **Odds Ratio = `0,057`**) $\rightarrow$ Truy xuất trúng đoạn vàng làm **giảm `94,3%` odds bị ảo giác**.
+
+---
+
+## 9. Điểm nhấn Kỹ thuật & Tối ưu hoá Triển khai (cho mục Thiết kế Hệ thống)
 
 1. **BM25 ma trận thưa CSC (`_FastBM25Okapi` trong [src/ragvi/retrieval.py](../src/ragvi/retrieval.py)):** Cài đặt chỉ mục đảo nén cột bằng NumPy thuần, khớp tuyệt đối `< 1e-12` với `rank_bm25.BM25Okapi`, giảm thời gian chấm điểm `c5_nohead` (`320.841` đoạn × `3.096` câu) từ `176 phút` xuống `21,7 phút` (**`8,1×`**).
 2. **Tối ưu suy luận LLM trên Colab ([scripts/colab_job.sh](../scripts/colab_job.sh), [src/ragvi/judge.py](../src/ragvi/judge.py)):**
@@ -135,7 +160,7 @@
 
 ---
 
-## 9. Danh mục File & Biểu đồ sẵn sàng chèn vào Báo cáo
+## 10. Danh mục File & Biểu đồ sẵn sàng chèn vào Báo cáo
 
 | Thành phần | Đường dẫn | Nội dung |
 |---|---|---|
@@ -143,8 +168,11 @@
 | Báo cáo chi tiết thực nghiệm | `reports/benchmark-colab-2026-11-20.md` | Mục 1–9 (`400` câu) + Mục 10 (`6.910` câu) |
 | Số liệu JSON Full Phase A | `reports/full_phase_a_summary.json` | 60 cấu hình + 95% CI + kiểm định Holm |
 | Số liệu JSON Full Phase B | `reports/full_phase_b_summary.json` | 18 cấu hình + 95% CI + RAH + kiểm định Holm |
+| Số liệu Pareto & MCDM | `reports/pareto_mcdm_summary.json` | Biên Pareto, điểm 3 kịch bản & độ nhạy ±0,1 |
+| Số liệu Hồi quy Logistic | `reports/logistic_summary.json` | Hồi quy `H_gold ~ Recall@5 + ...` (`n = 26.947`) |
 | Số liệu chi phí & độ trễ | `reports/cost_summary.json` | Kích thước chỉ mục, thông lượng, `p50/p95` |
 | Phiếu phân tích 30 ca lỗi | `reports/phieu/hallucination_30_cases.md` | 30 ca `H_gold = 1` gán nhãn 5 nguyên nhân |
 | Hình 1 (Full Phase A) | `reports/figures/fig1_full_phase_a_heatmap.svg` | Bản đồ nhiệt `nDCG@5` (60 cấu hình) |
 | Hình 2 (Full Phase B) | `reports/figures/fig2_full_phase_b_h_gold_ci.svg` | `Correctness` & `H_gold` kèm 95% CI (18 cấu hình) |
 | Hình 3 (Full RAH) | `reports/figures/fig3_full_rah_by_domain.svg` | Phân rã `RAH` vs `Oracle` giữa 2 miền |
+| Hình 4 (Biên Pareto) | `reports/figures/fig4_pareto_mcdm.svg` | Biên Pareto 3 tiêu chí trên cả 2 miền |

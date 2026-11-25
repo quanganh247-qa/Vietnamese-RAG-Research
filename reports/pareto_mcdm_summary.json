@@ -1,0 +1,499 @@
+{
+  "scenarios": {
+    "legal_medical": {
+      "label": "Pháp luật / Y tế (ưu tiên chống ảo giác)",
+      "w": [
+        0.6,
+        0.3,
+        0.1
+      ]
+    },
+    "fast_lookup": {
+      "label": "Tra cứu nhanh (ưu tiên độ trễ thấp)",
+      "w": [
+        0.2,
+        0.3,
+        0.5
+      ]
+    },
+    "balanced": {
+      "label": "Cân bằng",
+      "w": [
+        0.34,
+        0.33,
+        0.33
+      ]
+    }
+  },
+  "datasets": {
+    "viquad_full": {
+      "label": "UIT-ViQuAD 2.0 Full",
+      "n_rag_configs": 6,
+      "pareto_frontier": [
+        {
+          "config": "C3-E0-R0",
+          "correctness": 1.405354,
+          "h_gold": 0.179334,
+          "p50_seconds": 5.6375,
+          "false_refusal": 0.240859,
+          "wrong_article": null
+        },
+        {
+          "config": "C1-E3-R0",
+          "correctness": 1.468526,
+          "h_gold": 0.201136,
+          "p50_seconds": 6.008,
+          "false_refusal": 0.203543,
+          "wrong_article": null
+        },
+        {
+          "config": "C3-E3-R0",
+          "correctness": 1.495475,
+          "h_gold": 0.206769,
+          "p50_seconds": 6.0495,
+          "false_refusal": 0.186581,
+          "wrong_article": null
+        },
+        {
+          "config": "C3-E5-R0",
+          "correctness": 1.558613,
+          "h_gold": 0.211066,
+          "p50_seconds": 6.1045,
+          "false_refusal": 0.155296,
+          "wrong_article": null
+        },
+        {
+          "config": "C3-E3-R1",
+          "correctness": 1.563348,
+          "h_gold": 0.218432,
+          "p50_seconds": 6.1695,
+          "false_refusal": 0.148888,
+          "wrong_article": null
+        },
+        {
+          "config": "C4-E5-R1",
+          "correctness": 1.597285,
+          "h_gold": 0.222367,
+          "p50_seconds": 6.96,
+          "false_refusal": 0.130041,
+          "wrong_article": null
+        }
+      ],
+      "dominated": [],
+      "scenarios": {
+        "legal_medical": {
+          "label": "Pháp luật / Y tế (ưu tiên chống ảo giác)",
+          "weights": {
+            "h_gold": 0.6,
+            "correctness": 0.3,
+            "latency": 0.1
+          },
+          "ranking": [
+            {
+              "config": "C3-E0-R0",
+              "score": 0.7,
+              "norm_hallu": 1.0,
+              "norm_corr": 0.0,
+              "norm_lat": 1.0
+            },
+            {
+              "config": "C1-E3-R0",
+              "score": 0.466746,
+              "norm_hallu": 0.4934,
+              "norm_corr": 0.3291,
+              "norm_lat": 0.7198
+            },
+            {
+              "config": "C3-E5-R0",
+              "score": 0.461809,
+              "norm_hallu": 0.2626,
+              "norm_corr": 0.7985,
+              "norm_lat": 0.6469
+            },
+            {
+              "config": "C3-E3-R0",
+              "score": 0.427191,
+              "norm_hallu": 0.3625,
+              "norm_corr": 0.4695,
+              "norm_lat": 0.6885
+            },
+            {
+              "config": "C3-E3-R1",
+              "score": 0.361592,
+              "norm_hallu": 0.0914,
+              "norm_corr": 0.8232,
+              "norm_lat": 0.5977
+            },
+            {
+              "config": "C4-E5-R1",
+              "score": 0.3,
+              "norm_hallu": 0.0,
+              "norm_corr": 1.0,
+              "norm_lat": 0.0
+            }
+          ],
+          "sensitivity_pm01": {
+            "base_winner": "C3-E0-R0",
+            "grid_points": 18,
+            "stability": 1.0,
+            "winner_counts": {
+              "C3-E0-R0": 18
+            }
+          }
+        },
+        "fast_lookup": {
+          "label": "Tra cứu nhanh (ưu tiên độ trễ thấp)",
+          "weights": {
+            "h_gold": 0.2,
+            "correctness": 0.3,
+            "latency": 0.5
+          },
+          "ranking": [
+            {
+              "config": "C3-E0-R0",
+              "score": 0.7,
+              "norm_hallu": 1.0,
+              "norm_corr": 0.0,
+              "norm_lat": 1.0
+            },
+            {
+              "config": "C3-E5-R0",
+              "score": 0.615516,
+              "norm_hallu": 0.2626,
+              "norm_corr": 0.7985,
+              "norm_lat": 0.6469
+            },
+            {
+              "config": "C3-E3-R1",
+              "score": 0.564108,
+              "norm_hallu": 0.0914,
+              "norm_corr": 0.8232,
+              "norm_lat": 0.5977
+            },
+            {
+              "config": "C3-E3-R0",
+              "score": 0.557592,
+              "norm_hallu": 0.3625,
+              "norm_corr": 0.4695,
+              "norm_lat": 0.6885
+            },
+            {
+              "config": "C1-E3-R0",
+              "score": 0.557339,
+              "norm_hallu": 0.4934,
+              "norm_corr": 0.3291,
+              "norm_lat": 0.7198
+            },
+            {
+              "config": "C4-E5-R1",
+              "score": 0.3,
+              "norm_hallu": 0.0,
+              "norm_corr": 1.0,
+              "norm_lat": 0.0
+            }
+          ],
+          "sensitivity_pm01": {
+            "base_winner": "C3-E0-R0",
+            "grid_points": 27,
+            "stability": 0.8148,
+            "winner_counts": {
+              "C3-E0-R0": 22,
+              "C3-E5-R0": 5
+            }
+          }
+        },
+        "balanced": {
+          "label": "Cân bằng",
+          "weights": {
+            "h_gold": 0.34,
+            "correctness": 0.33,
+            "latency": 0.33
+          },
+          "ranking": [
+            {
+              "config": "C3-E0-R0",
+              "score": 0.67,
+              "norm_hallu": 1.0,
+              "norm_corr": 0.0,
+              "norm_lat": 1.0
+            },
+            {
+              "config": "C3-E5-R0",
+              "score": 0.566268,
+              "norm_hallu": 0.2626,
+              "norm_corr": 0.7985,
+              "norm_lat": 0.6469
+            },
+            {
+              "config": "C1-E3-R0",
+              "score": 0.51391,
+              "norm_hallu": 0.4934,
+              "norm_corr": 0.3291,
+              "norm_lat": 0.7198
+            },
+            {
+              "config": "C3-E3-R0",
+              "score": 0.505384,
+              "norm_hallu": 0.3625,
+              "norm_corr": 0.4695,
+              "norm_lat": 0.6885
+            },
+            {
+              "config": "C3-E3-R1",
+              "score": 0.499991,
+              "norm_hallu": 0.0914,
+              "norm_corr": 0.8232,
+              "norm_lat": 0.5977
+            },
+            {
+              "config": "C4-E5-R1",
+              "score": 0.33,
+              "norm_hallu": 0.0,
+              "norm_corr": 1.0,
+              "norm_lat": 0.0
+            }
+          ],
+          "sensitivity_pm01": {
+            "base_winner": "C3-E0-R0",
+            "grid_points": 27,
+            "stability": 0.8148,
+            "winner_counts": {
+              "C3-E0-R0": 22,
+              "C3-E5-R0": 5
+            }
+          }
+        }
+      }
+    },
+    "zalo_full": {
+      "label": "Zalo Legal Full",
+      "n_rag_configs": 8,
+      "pareto_frontier": [
+        {
+          "config": "C5_nohead-E3-R0",
+          "correctness": 1.238117,
+          "h_gold": 0.219975,
+          "p50_seconds": 6.948,
+          "false_refusal": 0.269958,
+          "wrong_article": 0.033502
+        },
+        {
+          "config": "C5-E3-R0",
+          "correctness": 1.44506,
+          "h_gold": 0.204277,
+          "p50_seconds": 9.186,
+          "false_refusal": 0.179511,
+          "wrong_article": 0.032077
+        },
+        {
+          "config": "C3-E5-R0",
+          "correctness": 1.470697,
+          "h_gold": 0.174944,
+          "p50_seconds": 10.519,
+          "false_refusal": 0.18228,
+          "wrong_article": 0.042325
+        },
+        {
+          "config": "C3-E3-R1",
+          "correctness": 1.524227,
+          "h_gold": 0.180677,
+          "p50_seconds": 10.6825,
+          "false_refusal": 0.154592,
+          "wrong_article": 0.037664
+        },
+        {
+          "config": "C5-E5-R1",
+          "correctness": 1.526534,
+          "h_gold": 0.18573,
+          "p50_seconds": 9.267,
+          "false_refusal": 0.152746,
+          "wrong_article": 0.03268
+        }
+      ],
+      "dominated": [
+        {
+          "config": "C3-E0-R0",
+          "dominated_by": [
+            "C5-E5-R1"
+          ]
+        },
+        {
+          "config": "C3-E3-R0",
+          "dominated_by": [
+            "C3-E5-R0"
+          ]
+        },
+        {
+          "config": "C4-E3-R0",
+          "dominated_by": [
+            "C3-E5-R0"
+          ]
+        }
+      ],
+      "scenarios": {
+        "legal_medical": {
+          "label": "Pháp luật / Y tế (ưu tiên chống ảo giác)",
+          "weights": {
+            "h_gold": 0.6,
+            "correctness": 0.3,
+            "latency": 0.1
+          },
+          "ranking": [
+            {
+              "config": "C3-E5-R0",
+              "score": 0.846299,
+              "norm_hallu": 1.0,
+              "norm_corr": 0.8064,
+              "norm_lat": 0.0438
+            },
+            {
+              "config": "C3-E3-R1",
+              "score": 0.821213,
+              "norm_hallu": 0.8727,
+              "norm_corr": 0.992,
+              "norm_lat": 0.0
+            },
+            {
+              "config": "C5-E5-R1",
+              "score": 0.794189,
+              "norm_hallu": 0.7605,
+              "norm_corr": 1.0,
+              "norm_lat": 0.379
+            },
+            {
+              "config": "C5-E3-R0",
+              "score": 0.464489,
+              "norm_hallu": 0.3486,
+              "norm_corr": 0.7175,
+              "norm_lat": 0.4007
+            },
+            {
+              "config": "C5_nohead-E3-R0",
+              "score": 0.1,
+              "norm_hallu": 0.0,
+              "norm_corr": 0.0,
+              "norm_lat": 1.0
+            }
+          ],
+          "sensitivity_pm01": {
+            "base_winner": "C3-E5-R0",
+            "grid_points": 18,
+            "stability": 0.7778,
+            "winner_counts": {
+              "C3-E5-R0": 14,
+              "C5-E5-R1": 3,
+              "C3-E3-R1": 1
+            }
+          }
+        },
+        "fast_lookup": {
+          "label": "Tra cứu nhanh (ưu tiên độ trễ thấp)",
+          "weights": {
+            "h_gold": 0.2,
+            "correctness": 0.3,
+            "latency": 0.5
+          },
+          "ranking": [
+            {
+              "config": "C5-E5-R1",
+              "score": 0.641612,
+              "norm_hallu": 0.7605,
+              "norm_corr": 1.0,
+              "norm_lat": 0.379
+            },
+            {
+              "config": "C5_nohead-E3-R0",
+              "score": 0.5,
+              "norm_hallu": 0.0,
+              "norm_corr": 0.0,
+              "norm_lat": 1.0
+            },
+            {
+              "config": "C5-E3-R0",
+              "score": 0.485336,
+              "norm_hallu": 0.3486,
+              "norm_corr": 0.7175,
+              "norm_lat": 0.4007
+            },
+            {
+              "config": "C3-E3-R1",
+              "score": 0.472138,
+              "norm_hallu": 0.8727,
+              "norm_corr": 0.992,
+              "norm_lat": 0.0
+            },
+            {
+              "config": "C3-E5-R0",
+              "score": 0.463811,
+              "norm_hallu": 1.0,
+              "norm_corr": 0.8064,
+              "norm_lat": 0.0438
+            }
+          ],
+          "sensitivity_pm01": {
+            "base_winner": "C5-E5-R1",
+            "grid_points": 27,
+            "stability": 0.8889,
+            "winner_counts": {
+              "C5-E5-R1": 24,
+              "C5_nohead-E3-R0": 3
+            }
+          }
+        },
+        "balanced": {
+          "label": "Cân bằng",
+          "weights": {
+            "h_gold": 0.34,
+            "correctness": 0.33,
+            "latency": 0.33
+          },
+          "ranking": [
+            {
+              "config": "C5-E5-R1",
+              "score": 0.713643,
+              "norm_hallu": 0.7605,
+              "norm_corr": 1.0,
+              "norm_lat": 0.379
+            },
+            {
+              "config": "C3-E3-R1",
+              "score": 0.624074,
+              "norm_hallu": 0.8727,
+              "norm_corr": 0.992,
+              "norm_lat": 0.0
+            },
+            {
+              "config": "C3-E5-R0",
+              "score": 0.62056,
+              "norm_hallu": 1.0,
+              "norm_corr": 0.8064,
+              "norm_lat": 0.0438
+            },
+            {
+              "config": "C5-E3-R0",
+              "score": 0.487543,
+              "norm_hallu": 0.3486,
+              "norm_corr": 0.7175,
+              "norm_lat": 0.4007
+            },
+            {
+              "config": "C5_nohead-E3-R0",
+              "score": 0.33,
+              "norm_hallu": 0.0,
+              "norm_corr": 0.0,
+              "norm_lat": 1.0
+            }
+          ],
+          "sensitivity_pm01": {
+            "base_winner": "C5-E5-R1",
+            "grid_points": 27,
+            "stability": 1.0,
+            "winner_counts": {
+              "C5-E5-R1": 27
+            }
+          }
+        }
+      }
+    }
+  }
+}

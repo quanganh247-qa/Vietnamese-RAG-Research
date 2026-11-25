@@ -94,14 +94,30 @@ Ngoài ra, trên **Zalo Legal Full**, `ViStructChunk` đưa tỷ lệ **nhầm �
 
 ---
 
-## 5. Bảng Khuyến nghị Cấu hình (RQ5)
+## 5. Khung Khuyến nghị Cấu hình Đa tiêu chí (Biên Pareto + MCDM + Độ nhạy `±0,1`) và Hồi quy Logistic (RQ5)
+
+### 5.1. Phân tích Hồi quy Logistic tách ảnh hưởng trực tiếp và gián tiếp lên $H_{\text{gold}}$
+Trên `26.947` quan sát câu trả lời có nhãn (`13.859` Zalo Full + `13.088` ViQuAD Full), mô hình hồi quy logistic $P(H_{\text{gold}} = 1) \sim \text{Recall@5} + \text{Reranker} + \text{Hybrid} + \text{Chunking}$ chỉ ra:
+- **`Recall@5` là yếu tố chi phối áp đảo ở cả hai miền:** $\beta = -2,8754$ ($z = -35,66$, $p < 10^{-10}$, $\text{OR} = 0,056$) trên Zalo và $\beta = -2,8660$ ($z = -23,58$, $p < 10^{-10}$, $\text{OR} = 0,057$) trên ViQuAD — truy xuất trúng tài liệu vàng vào Top-5 giúp **giảm `~94,4%` tỷ số chênh (odds) bị ảo giác**.
+- Trên Zalo, sau khi kiểm soát `Recall@5`, `has_reranker` ($p = 0,4238$) và `is_hybrid` ($p = 0,7481$) không còn tác động trực tiếp $\Rightarrow$ lợi ích giảm ảo giác của chúng đi hoàn toàn gián tiếp thông qua cải thiện `Recall@5`. Ngược lại, **`is_c5_nohead`** vẫn làm tăng trực tiếp odds ảo giác **`+38%`** ($\text{OR} = 1,380$, $z = +4,23$, $p < 0,0001$) ngay cả khi `Recall@5` bằng nhau, khẳng định việc thiếu tiêu đề cha gây ra ảo giác trực tiếp ở tầng sinh.
+
+### 5.2. Biên Pareto 3 tiêu chí, Điểm MCDM theo 3 kịch bản và Phân tích Độ nhạy (`±0,1`)
+
+![Hình 4: Biên Pareto 3 tiêu chí trên Full Datasets](figures/fig4_pareto_mcdm.svg)
+
+Đặt các cấu hình RAG trong không gian 3 tiêu chí *(Correctness ↑, $H_{\text{gold}}$ ↓, Độ trễ `p50` ↓)*:
+- **Zalo Legal Full:** Loại bỏ 3 cấu hình bị trội (`C3-E0-R0` bị trội bởi `C5-E5-R1`; `C3-E3-R0` và `C4-E3-R0` bị trội bởi `C3-E5-R0`), còn lại **5 cấu hình Biên Pareto** (`C5-E5-R1`, `C3-E5-R0`, `C3-E3-R1`, `C5-E3-R0`, `C5_nohead-E3-R0`). Khi tính điểm min–max có trọng số và dao động mỗi trọng số `±0,1`:
+  - *Kịch bản Cân bằng (`0,34 / 0,33 / 0,33`):* **`C5-E5-R1`** hạng `#1` (`score = 0,7136`, **độ ổn định `100,0%`** — `27/27` điểm lưới).
+  - *Kịch bản Tra cứu nhanh (`0,20 / 0,30 / 0,50`):* **`C5-E5-R1`** hạng `#1` (`score = 0,6416`, **độ ổn định `88,9%`** — `24/27` điểm lưới, nhờ chunk `C5` ngắn giúp `p50 = 9,27 s`).
+  - *Kịch bản Pháp luật / Y tế (`0,60 / 0,30 / 0,10`):* **`C3-E5-R0`** hạng `#1` (`score = 0,8463`, độ ổn định `77,8%`; `C5-E5-R1` thắng ở `3/18` điểm lưới và có tỷ lệ nhầm điều luật thấp hơn: `3,27%` vs `4,23%`).
+- **UIT-ViQuAD 2.0 Full:** Cả `6/6` cấu hình đều thuộc Biên Pareto. Nếu chỉ tối ưu bộ 3 không kèm ràng buộc từ chối sai, `C3-E0-R0` đạt điểm MCDM `#1` (`stability = 81,5%–100%`) do từ chối nhiều (`false_refusal = 24,09%`) làm $H_{\text{gold}}$ danh nghĩa giảm. Khi áp ràng buộc `false_refusal ≤ 16%`, khuyến nghị tối ưu là **`C4-E5-R1`** (độ đúng cao nhất) và **`C3-E5-R0`** (cân bằng không cần Reranker).
 
 | Miền văn bản | Mục tiêu ưu tiên | Cấu hình khuyến nghị | Hiệu năng thực đo (Full Dataset) | Ghi chú chi phí & triển khai |
 |---|---|---|---|---|
-| **Pháp luật (Zalo Legal)** | **Độ đúng cao nhất & ít nhầm điều luật nhất** | **`C5-E5-R1`** (`ViStructChunk + Hybrid + bge-reranker-v2-m3`) | `Correctness = 1,5265` (`92,1%` oracle), `Recall@5 = 90,50%`, `WrongArt = 3,27%`, `FR = 15,27%` | Chunk ngắn (`91,7` tok TB, `0% > 512`), rerank thêm ~`39 ms/truy vấn` trên GPU |
-| **Pháp luật (Zalo Legal)** | **Cân bằng tốc độ / không dùng Reranker** | **`C5-E3-R0`** hoặc **`C3-E5-R0`** | `C5-E3-R0`: `Corr = 1,4451`, `WrongArt = 3,21%`; `C3-E5-R0`: `Corr = 1,4707`, `H_gold = 17,49%` | Tránh `C4` nguyên điều (chậm ~2×, `WrongArt = 6,35%`) và **tuyệt đối tránh `C5_nohead`** |
-| **Bách khoa (UIT-ViQuAD)** | **Độ đúng cao nhất** | **`C4-E5-R1`** (hoặc `C3-E5-R1`) | `Correctness = 1,5973` (`94,6%` oracle), `Recall@5 = 96,49%`, `nDCG@5 = 0,9233`, `FR = 13,00%` | Đoạn Wikipedia ngắn tự nhiên (`213,9` tok TB) nên giữ nguyên đoạn `C4` kết hợp Hybrid+R1 tối ưu nhất |
-| **Bách khoa (UIT-ViQuAD)** | **Độ trễ thấp / không dùng Reranker** | **`C3-E5-R0`** (`Hybrid`) | `Correctness = 1,5586`, `FR = 15,53%` | Vượt `BM25` tới `+0,153` điểm và gần ngang `C3-E3-R1` (`1,5633`) mà không tốn chi phí cross-encoder |
+| **Pháp luật (Zalo Legal)** | **Cân bằng, Tra cứu nhanh & Ít nhầm điều luật nhất** | **`C5-E5-R1`** (`ViStructChunk + Hybrid + R1`) | `Corr = 1,5265` (`92,1%` oracle), `Recall@5 = 90,50%`, `WrongArt = 3,27%`, `FR = 15,27%`, `p50 = 9,27 s` | Độ ổn định MCDM **`100%`** (Cân bằng) & **`88,9%`** (Tra cứu nhanh) |
+| **Pháp luật (Zalo Legal)** | **Ưu tiên $H_{\text{gold}}$ thấp nhất / không Reranker** | **`C3-E5-R0`** (hoặc `C5-E3-R0`) | `C3-E5-R0`: `H_gold = 17,49%`, `Corr = 1,4707`; `C5-E3-R0`: `WrongArt = 3,21%` | Loại `C4` nguyên điều (bị trội Pareto, chậm ~`2×`) và **tuyệt đối tránh `C5_nohead`** |
+| **Bách khoa (UIT-ViQuAD)** | **Độ đúng cao nhất** *(ràng buộc `FR ≤ 16%`)* | **`C4-E5-R1`** (hoặc `C3-E5-R1`) | `Corr = 1,5973` (`94,6%` oracle), `Recall@5 = 96,49%`, `nDCG@5 = 0,9233`, `FR = 13,00%` | Đoạn Wikipedia ngắn tự nhiên (`213,9` tok TB) nên giữ nguyên đoạn `C4` tối ưu nhất |
+| **Bách khoa (UIT-ViQuAD)** | **Độ trễ thấp / không dùng Reranker** | **`C3-E5-R0`** (`Hybrid`) | `Corr = 1,5586`, `FR = 15,53%`, `p50 = 6,10 s` | Gần ngang `C3-E3-R1` (`1,5633`) mà không tốn chi phí cross-encoder |
 
 ---
 

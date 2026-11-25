@@ -1,0 +1,120 @@
+{
+  "viquad_full": {
+    "n_obs": 13088,
+    "h_gold_rate": 0.207136,
+    "mcfadden_r2": 0.055778,
+    "terms": [
+      {
+        "feature": "intercept",
+        "coef": 1.270226,
+        "se": 0.122671,
+        "z": 10.3547,
+        "p_value": 0.0,
+        "odds_ratio": 3.5617
+      },
+      {
+        "feature": "recall_at_5",
+        "coef": -2.866045,
+        "se": 0.121551,
+        "z": -23.579,
+        "p_value": 0.0,
+        "odds_ratio": 0.0569
+      },
+      {
+        "feature": "has_reranker",
+        "coef": 0.224278,
+        "se": 0.066747,
+        "z": 3.3601,
+        "p_value": 0.000779,
+        "odds_ratio": 1.2514
+      },
+      {
+        "feature": "is_hybrid",
+        "coef": 0.161412,
+        "se": 0.067621,
+        "z": 2.387,
+        "p_value": 0.016986,
+        "odds_ratio": 1.1752
+      },
+      {
+        "feature": "is_c1_fixed",
+        "coef": 0.029231,
+        "se": 0.070578,
+        "z": 0.4142,
+        "p_value": 0.678759,
+        "odds_ratio": 1.0297
+      },
+      {
+        "feature": "is_c4_para",
+        "coef": -0.102797,
+        "se": 0.099596,
+        "z": -1.0321,
+        "p_value": 0.302009,
+        "odds_ratio": 0.9023
+      }
+    ]
+  },
+  "zalo_full": {
+    "n_obs": 13859,
+    "h_gold_rate": 0.187604,
+    "mcfadden_r2": 0.11276,
+    "terms": [
+      {
+        "feature": "intercept",
+        "coef": 1.023193,
+        "se": 0.080595,
+        "z": 12.6955,
+        "p_value": 0.0,
+        "odds_ratio": 2.7821
+      },
+      {
+        "feature": "recall_at_5",
+        "coef": -2.875356,
+        "se": 0.080634,
+        "z": -35.6593,
+        "p_value": 0.0,
+        "odds_ratio": 0.0564
+      },
+      {
+        "feature": "has_reranker",
+        "coef": 0.047881,
+        "se": 0.059869,
+        "z": 0.7998,
+        "p_value": 0.423842,
+        "odds_ratio": 1.049
+      },
+      {
+        "feature": "is_hybrid",
+        "coef": -0.019468,
+        "se": 0.060633,
+        "z": -0.3211,
+        "p_value": 0.748147,
+        "odds_ratio": 0.9807
+      },
+      {
+        "feature": "is_c4_article",
+        "coef": -0.125894,
+        "se": 0.080455,
+        "z": -1.5648,
+        "p_value": 0.117633,
+        "odds_ratio": 0.8817
+      },
+      {
+        "feature": "is_c5_struct",
+        "coef": 0.19852,
+        "se": 0.059179,
+        "z": 3.3545,
+        "p_value": 0.000795,
+        "odds_ratio": 1.2196
+      },
+      {
+        "feature": "is_c5_nohead",
+        "coef": 0.321995,
+        "se": 0.0761,
+        "z": 4.2312,
+        "p_value": 2.3e-05,
+        "odds_ratio": 1.3799
+      }
+    ]
+  }
+}
